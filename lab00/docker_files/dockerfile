@@ -1,0 +1,23 @@
+# 🏃 start from specific docker image registry
+FROM ghcr.io/osgeo/gdal:ubuntu-full-latest
+
+# add python3 🐍, pip3 and venv to the image
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip python3-venv && \
+    apt-get clean
+
+# add requirements.txt to the image
+ADD requirements.txt requirements.txt
+
+# install python packages from requirements.txt
+RUN python3 -m venv ./venv-advGIS2 && \
+    ./venv-advGIS2/bin/pip install --no-cache -r requirements.txt
+
+# make the port 8888 available to the world outside this container 🆓
+EXPOSE 8888
+
+# set the working directory in the container
+WORKDIR /jupyter
+
+# run jupyter lab 🚀
+CMD ["../venv-advGIS2/bin/jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''"]

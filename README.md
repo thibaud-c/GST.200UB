@@ -1,2 +1,6 @@
 # Graz_GST.200UB
-Advanced GIS Analysis 2 (Urban Spaces)
+
+Repository for Advanced GIS Analysis 2 (Urban Spaces) @ Uni Graz
+
+Contains the following folders:
+- `lab00`: Setup of the docker environment

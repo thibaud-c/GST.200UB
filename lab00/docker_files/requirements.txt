@@ -1,0 +1,9 @@
+jupyterlab=4.2.5
+numpy=2.1.1
+geopandas=1.0.1
+seaborn=0.13.2
+scikit-learn=1.5.2
+keplergl=0.3.2
+duckdb=1.1.1
+osmnx=1.9.4
+h3=3.7.7

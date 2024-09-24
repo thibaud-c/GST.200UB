@@ -1,0 +1,9 @@
+services:
+  advgis: # image name
+    build: # dockerfile to build
+      context: .
+      dockerfile: Dockerfile
+    ports: # port mapping
+      - '8888:8888'
+    volumes: # mounting volume with local machine
+      - ./AdvGIS_2:/jupyter
