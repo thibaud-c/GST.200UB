@@ -1,0 +1,22 @@
+# Code python
+setuptools
+
+# Core JupyterLab and Widgets
+jupyterlab
+jupyterlab_theme_solarized_dark
+ipywidgets
+nodejs
+
+# Data Science Libraries
+numpy
+pandas
+geopandas
+scikit-learn
+duckdb
+osmnx
+h3
+
+# Visualization Libraries
+matplotlib
+keplergl
+bokeh
