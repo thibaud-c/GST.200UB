@@ -20,3 +20,4 @@ h3
 matplotlib
 keplergl
 bokeh
+folium
