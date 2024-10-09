@@ -6,13 +6,16 @@ jupyterlab
 jupyterlab_theme_solarized_dark
 ipywidgets
 nodejs
+jupysql
 
 # Data Science Libraries
 numpy
 pandas
 geopandas
+pyarrow
 scikit-learn
 duckdb
+duckdb-engine
 osmnx
 h3
 
