@@ -1,7 +1,7 @@
-# Spatial Accessibility Metrics for Urban Green Spaces
+# Spatial Accessibility Metrics for Urban Green Spaces 🌳
 
 
-## Objectives
+## 💡 Objectives
 
 By the end of this exercise, you will be able to:
 
@@ -12,13 +12,13 @@ By the end of this exercise, you will be able to:
 - Visualize geospatial analysis results using various mapping techniques.
 
 
-## Data Gathering
+## 💾 Data Gathering
 
 - 👥 Population data: [data for good](https://dataforgood.fb.com/tools/population-density-maps/) 
 > other options: [WorldPop](https://www.worldpop.org/geodata/listing?id=29)
-- 🌳 Green space data: [Vienna](data.gov.at) and [Berlin](govdata.de)
+- 🌳 Green space data: [Vienna](https://www.data.gv.at/) and [Berlin](https://www.govdata.de/)
 > other options: [OpenStreetMap](https://www.openstreetmap.org/) or [OSMnx](https://osmnx.readthedocs.io/en/stable/)
-- 🗺️ Administrative boundaries: [Vienna](data.gov.at) and [Berlin](https://daten.odis-berlin.de/en/dataset/bezirksgrenzen/)
+- 🗺️ Administrative boundaries: [Vienna](https://www.data.gv.at/) and [Berlin](https://daten.odis-berlin.de/en/dataset/bezirksgrenzen/)
 
 <br>
 
@@ -64,7 +64,7 @@ df = result.df()
 <br>
 
 
-## Data Processing
+## ⚙️ Data Processing
 
 1. Load and Plot the Data: Understand the spatial distribution of green spaces and population points.
 2. Create Buffers Around Green Spaces: Generate buffer zones of 500m around each green space to analyze proximity.
@@ -123,3 +123,11 @@ gdf['...'].fillna(...) # to fill data if the missing values
 
 6. Normalize Population Data: Derive density and accessibility metrics
 7. Visualize your data with a choropleth map and a stacked bar chart
+
+
+## 🥊 Challenges
+- Estimate the accessibility of green spaces for each district by calculating the average distance for each population to the nearest green space.
+- Implement the Two-step floating catchment area (2SFCA) method for assessing the accessibility of green spaces.
+
+
+Congratulations! 🎉 You have successfully completed the exercise. 
