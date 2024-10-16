@@ -21,6 +21,6 @@ h3
 
 # Visualization Libraries
 matplotlib
-lonboard
+keplergl
 bokeh
 folium

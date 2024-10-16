@@ -43,7 +43,7 @@ To use duckdb in jupyter notebook, you can use the following code
 duckdb.sql('INSTALL spatial')
 duckdb.sql('LOAD spatial')
 
-query = """ WRITE ASQL QUERY HERE """
+query = """ WRITE ANY SQL QUERY HERE """
 result = duckdb.sql(query)
 
 # save the result to a df
@@ -54,11 +54,12 @@ df = result.df()
 <details>
   <summary><em>🚧 Steps to transform your raw data...</em></summary>
 
-1. load the population data
-2. load the administrative boundaries
-3. check the spatial reference system of the data
-4. clip the population data to the study area (use ST_Intersects)
-5. copy to output of the query to a parquet file
+1. load the population data (`CREATE TABLE` & `read_csv`)
+2. load the administrative boundaries (`CREATE TABLE` & `ST_Read(.. *.shp)`)
+3. check the spatial reference system of the data (SELECT ST_ASText(geom) FROM ... LIMIT 1)
+3. reproject the data if needed (`ST_Transform ( ST_FlipCoordinates (...), 'EPSG:31256','EPSG:4326') AS ...`) 
+4. clip the population data to the study area ( `ST_Intersects(..., ...)`)
+5. copy to output of the query to a parquet file (`COPY (...) TO 'output.parquet' WITH (FORMAT 'parquet');`)
 
 </details>
 <br>
@@ -67,6 +68,25 @@ df = result.df()
 ## ⚙️ Data Processing
 
 1. Load and Plot the Data: Understand the spatial distribution of green spaces and population points.
+<details>
+  <summary><em>🚧 function to use...</em></summary>
+
+Here you can use matplotlib or kepler to explore your data
+```python
+from keplergl import KeplerGl
+from IPython.display import IFrame
+# create map
+kepler_map = KeplerGl()
+# add data 
+kepler_map.add_data(data=gdf, name=...)
+# save the map
+kepler_map.save_to_html(file_name='explore_map.html')
+# visualize the map within the notebook
+IFrame(src='./explore_map.html', width=800, height=1000)
+```
+</details>
+<br>
+
 2. Create Buffers Around Green Spaces: Generate buffer zones of 500m around each green space to analyze proximity.
 <details>
   <summary><em>🚧 function to use...</em></summary>
