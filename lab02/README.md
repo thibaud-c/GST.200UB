@@ -97,28 +97,28 @@ gdf.buffer(...)
 </details>
 <br>
 
-2. Assign Population Points to Districts: Assign each population point to its respective administrative district using spatial joins.
+3. Assign Population Points to Districts: Assign each population point to its respective administrative district using spatial joins.
 <details>
   <summary><em>🚧 function to use...</em></summary>
 
 ```python
-gpd.sjoin...()
+gpd.sjoin(...)
 ```
 </details>
 <br>
 
-3. Determine Proximity to Green Spaces: Identify population points within the buffered green space zones. (Flag each population point as either inside or outside the green space buffer)
+4. Determine Proximity to Green Spaces: Identify population points within the buffered green space zones. (Flag each population point as either inside or outside the green space buffer)
 <details>
   <summary><em>🚧 function to use...</em></summary>
 
 ```python
-gpd.sjoin...()
+gpd.sjoin(...)
 gdf['...'] = gdf['...'].notna() # to flag the data in a new column
 ```
 </details>
 <br>
 
-4. Aggregate Population Data by District: Aggregate population statistics at the district level.
+5. Aggregate Population Data by District: Aggregate population statistics at the district level.
 <details>
   <summary><em>🚧 function to use...</em></summary>
 
@@ -129,7 +129,7 @@ pd.merge(...)
 </details>
 <br>
 
-5. Merge Aggregated Data with Districts
+6. Merge Aggregated Data with Districts
 <details>
   <summary><em>🚧 function to use...</em></summary>
 
@@ -141,8 +141,8 @@ gdf['...'].fillna(...) # to fill data if the missing values
 <br>
 
 
-6. Normalize Population Data: Derive density and accessibility metrics
-7. Visualize your data with a choropleth map and a stacked bar chart
+7. Normalize Population Data: Derive density and accessibility metrics
+8. Visualize your data with a choropleth map and a stacked bar chart
 
 
 ## 🥊 Challenges
