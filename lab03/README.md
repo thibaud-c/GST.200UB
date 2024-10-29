@@ -151,7 +151,7 @@ ROW_NUMBER() OVER (PARTITION BY ca.area_numbe ORDER BY COUNT(c.ID) DESC) as rn
 -- and you order by the count of crimes in descending order
 -- the result will be a column with the rank of each crime type per community area
 ```
-- join with the community areas geojson file
+- Join with the community areas geojson file
 - Plot a choropleth map showing crime types per community area.
 
 <br>
@@ -159,7 +159,7 @@ ROW_NUMBER() OVER (PARTITION BY ca.area_numbe ORDER BY COUNT(c.ID) DESC) as rn
 ### Q8: Which is the most dangerous Community Area?
 
 - Group data by Community Area and count crimes
-- join with the community areas geojson file
+- Join with the community areas geojson file
 - Plot a choropleth map showing crime counts per community area.
 <details>
   <summary><em>ℹ️ expected answer...</em></summary>
@@ -177,7 +177,7 @@ AUSTIN
 TABLESAMPLE(1 percent)
 ```
 - Create a heatmap to visualize the spatial distribution of crime
-- add a filter to animate the data over time
+- Add a temporal filter within keplerGL to animate the data over time
 
 <br>
 
