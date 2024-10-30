@@ -227,7 +227,9 @@ _ _ _ _ _
 <details>
   <summary><em>👀 Wanna verify the answer you found?</em></summary>
 <br>
-Narcotics > Battery > Theft
+
+> Narcotics > Battery > Theft
+
 </details>
 
 <br>
@@ -326,6 +328,23 @@ TABLESAMPLE(1 percent)
 - Create a heatmap to visualize the spatial distribution of crime
 - Add a temporal filter within keplerGL to animate the data over time
 
+#### <u>ℹ️ Tips</u>:
+<details>
+    <summary>💡 Need Help?</summary>
+    <br>
+
+> Use the filter tab to add a temporal filter in keplerGL <br>
+> To zoom on the data in Kepler you can change the configuration of the map with the following code:
+> ```python
+> kepler_map.config['mapState'] = {
+>   'latitude': gdf.iloc[0].geometry.centroid.y,
+>   'longitude': gdf.iloc[0].geometry.centroid.x,
+>   'zoom': 10
+> }
+> ```
+
+</details>
+
 <br>
 
 
@@ -374,5 +393,7 @@ TABLESAMPLE(1 percent)
 
 ## 🥊 Challenges
 - Create a KDE for other crime types
+
+<br>
 
 Congratulations! 🎉 You have successfully completed the exercise. 
