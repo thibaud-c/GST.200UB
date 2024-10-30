@@ -1,7 +1,7 @@
 # 👮  Alert In Chicago I
 
 ## Data to use
-- [Chicago Crimes - 2001 to Present](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-Present/ijzp-q8t2/about_data)
+- [Chicago Crimes - 2001 to Present](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-Present/ijzp-q8t2)
 - [Chicago Community Areas](https://data.cityofchicago.org/d/cauq-8yn6)
 
 ## Libraries to use:
