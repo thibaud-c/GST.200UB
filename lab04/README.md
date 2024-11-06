@@ -1,4 +1,4 @@
-# 👮  Alert In Chicago II
+# 🚓  Alert In Chicago II
 
 ## Data to use
 - [Chicago Crimes - 2001 to Present](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-Present/ijzp-q8t2)
@@ -69,7 +69,7 @@ _( if not already done in the previous exercise )_
 -- create com_areas
 CREATE OR REPLACE TABLE com_areas AS
     SELECT *
-    FROM ST_Read('../lab03/data/Com_Areas.geojson');
+    FROM ST_Read('path_to_geojson/Com_Areas.geojson');
 
 -- update geometry column name
 ALTER TABLE com_areas 
@@ -78,7 +78,7 @@ RENAME COLUMN geom to geometry;
 -- create crimes from parquet
 CREATE OR REPLACE TABLE crimes AS
     SELECT *, ST_Point2D(Longitude, Latitude) as geometry 
-    FROM Read_Parquet('../lab03/data/Crimes.parquet')
+    FROM Read_Parquet('path_to_parquet/Crimes.parquet')
     WHERE Location IS NOT NULL;
 ```
 
@@ -91,8 +91,10 @@ CREATE OR REPLACE TABLE crimes AS
 
 ## 📍 Calculate Mean Center of Crimes per Year
 
-- Calculate the mean center of crimes per year to understand the evolution of crimes distribution over time
+- Calculate the mean center of crimes per year to understand the evolution of crimes distribution over time (try with Battery, Burglary, Robbery).
 - Visualize the evolution using a [scatter map](https://plotly.com/python/tile-map-layers/) from Plotly 
+
+➡️ **_How the mean center of different crimes type derive?_**
 
 
 #### <u>ℹ️ Tips</u>:
@@ -117,7 +119,8 @@ CREATE OR REPLACE TABLE crimes AS
 
 > #### 💡 Pro Tip: you don't need geometries, KeplerGL can read h3 index out-of-the-box 
 
-🆘 I'll give you the SQL code to create an empty h3 grid based on the community areas. To better understand what is happening here you can execute the queries one by one and look at the intermediary results
+#### 🆘 Empty h3 grid:
+I'll give you the SQL code to create an empty h3 grid based on the community areas. To better understand what is happening here you can execute the queries one by one and look at the intermediary results
 
 ```SQL
 -- create a table with h3 grid
@@ -143,11 +146,18 @@ CREATE OR REPLACE TABLE h3_grid AS (
 );
 ```
 
-🫵 Now you need to:
-- add a column to the table crimes for the h3 index
-- update the column with the h3 string at level 8 for each crime (assign a h3 string to the crimes)
-- SELECT all crimes of of a specific type 
-  - JOIN the crimes to the h3 grid 
+#### 🫵 Now you need to:
+
+Join the aggregated crimes values to the h3 grid and visualize the results in KeplerGL 
+
+#### Step-by-Step guide: 
+
+1. add a column to the table crimes for the h3 index
+2. update the column with the h3 string at level 8 for each crime (assign a h3 string to the crimes)
+3. join aggregated crimes values to the grid
+    - filter the crimes by type (e.g. 'ROBBERY') 
+    - aggregate the crimes by h3 string
+    - join the crimes to the h3 grid
 
 #### <u>ℹ️ Tips</u>:
 <details>
@@ -157,8 +167,10 @@ CREATE OR REPLACE TABLE h3_grid AS (
 > You will need the following SQL keyword:
 > - `ALTER TABLE table ADD COLUMN IF NOT EXISTS col type;` to create a new column (think about the type, here it is a string -> VARCHAR in SQL)
 > - `UPDATE table SET old_col = new_col` to update the values of the new column
-> - `h3_latlng_to_cell_string(lat, lon, h3_level)` to create the h3 id
+> - `h3_latlng_to_cell_string(lat, lon, h3_level)` to create the h3 string
 > - `FROM tab1 JOIN tab2 ON tab1.col = tab2.col` to join two tables
+>
+>  👀 look at the documentation of [h3](https://community-extensions.duckdb.org/extensions/h3.html)
 
 </details>
 
@@ -178,12 +190,13 @@ CREATE OR REPLACE TABLE h3_grid AS (
 > 2. transpose your weights in rows <br>
 > 3. calculate the [Moran](https://pysal.org/esda/generated/esda.Moran.html) value from the package esda
 > 
-> you can find an example [here 👀](https://kazumatsuda.medium.com/exploratory-spatial-data-analysis-esda-spatial-autocorrelation-71b5782c19d6)
+> you can find a great example [here 👀](https://kazumatsuda.medium.com/exploratory-spatial-data-analysis-esda-spatial-autocorrelation-71b5782c19d6)
 </details>
 <details>
   <summary>👀 Wanna verify the answer you found?</summary>
     <br>
 
+> for ROBBERYs: <br>
 > Moran's I: 0.662 <br>
 > p-value: 0.001 <br>
 > => it is significantly  clustered
@@ -192,10 +205,15 @@ CREATE OR REPLACE TABLE h3_grid AS (
 
 <br>
 
-## 👓 Visualize the local spatial autocorrelation with LISA (Local Moran's I) 
+## 👓 Visualize the local spatial autocorrelation LISA (Local Moran's I) 
 
 - use the same weights calculated before 
-- calculate the local spatial autocorrelation with [Moran_Local](https://pysal.org/esda/generated/esda.Moran_Local.html#esda.Moran_Local.__init__)
+- calculate the local spatial autocorrelation [Moran_Local](https://pysal.org/esda/generated/esda.Moran_Local.html#esda.Moran_Local.__init__)
+- visualize the results in Plotly
+  - You should add the moran_local values back to your geodataframe
+    - Moran_Local outputs a list of categorical values with quadrants `q` (HH=1, LL=2, LH=3, HL=4). The list of `q` values has the same length than your geodataframe.
+    - Moran_Local outputs also a list of p-values with `p_sim`
+  - Use plotly `choropleth_map` to visualize the results and add the `q` values as `color`  
 
 #### <u>ℹ️ Tips</u>:
 <details>
