@@ -32,8 +32,8 @@ duckdb.sql(query)
 ```python
 # add h3 extension
 # import duckdb
-duckdb.sql('INSTALL h3')
-duckdb.sql('LOAD h3')
+duckdb.sql('INSTALL h3 FROM community;')
+duckdb.sql('LOAD h3;')
 ```
 
 - [PySAL](https://pysal.org/packages/)
@@ -135,6 +135,7 @@ CREATE OR REPLACE TABLE h3_grid AS (
             -- UNNEST is used to flatten the array of simple polygons
             UNNEST(ST_Dump(geometry)).geom.h3_polygon_wkt_to_cells_string(8) as strs
         FROM  
+            -- ** Does your table of communities areas is called like this? **
             com_areas
     )
     SELECT 
@@ -155,7 +156,7 @@ Join the aggregated crimes values to the h3 grid and visualize the results in Ke
 1. add a column to the table crimes for the h3 index
 2. update the column with the h3 string at level 8 for each crime (assign a h3 string to the crimes)
 3. join aggregated crimes values to the grid
-    - filter the crimes by type (e.g. 'ROBBERY') 
+    - filter the crimes by arrest
     - aggregate the crimes by h3 string
     - join the crimes to the h3 grid
 
@@ -196,12 +197,14 @@ Join the aggregated crimes values to the h3 grid and visualize the results in Ke
   <summary>👀 Wanna verify the answer you found?</summary>
     <br>
 
-> for ROBBERYs: <br>
-> Moran's I: 0.662 <br>
+> for crimes with arrests: <br>
+> Moran's I: 0.58 <br>
 > p-value: 0.001 <br>
-> => it is significantly  clustered
+> => the distribution of values is significantly clustered
 
 </details>
+> #### 💡 Pro Tip: you can use the library `splot` with the function `moran_scatterplot` to visualize Moran's I in 2D (works also with local Moran)
+
 
 <br>
 
@@ -225,9 +228,25 @@ Join the aggregated crimes values to the h3 grid and visualize the results in Ke
 
 <br>
 
+
+## 🌍 Visualize in 3D crimes (with arrest) distribution time series
+
+- filter your data by arrest
+- group your data by year and h3 index
+- export the geometry of the hex grid in lat lon  
+- visualize the data in 3D with Plotly `scatter_3d` using the height with `year` and the color with `number of crimes``
+- do the same with keplerGL
+
+</details>
+
+<br>
+
 ## 🥊 Challenges
 - Try to calculate and visualize [Getis-Ord Gi*](https://pysal.org/esda/generated/esda.G_Local.html) values
 - Create a h3 grid with another level and compare the results
+
+## 🥊🥊 Hard Challenges
+- select years 2017-2023, try to predict the crime distribution in 2023 using the previous years
 
 <br>
 
