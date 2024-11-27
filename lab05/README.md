@@ -8,13 +8,14 @@
 - [networkx](https://networkx.org/documentation/stable/index.html)
 > Used to create, manipulate, and study the structure, dynamics, and functions of complex networks
 
-- [pyproj](https://pyproj4.github.io/pyproj/stable/)
-> Used to perform cartographic transformations and geodetic computations
-
 ```python
 # if not already install, you can install it with
 !pip install networkx[default]
 ```
+
+- [pyproj](https://pyproj4.github.io/pyproj/stable/)
+> Used to perform cartographic transformations and geodetic computations
+
 
 <br>
 
