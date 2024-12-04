@@ -63,7 +63,7 @@ Create a notebook that can calculate the **centrality measures** of a street net
 
 > ℹ️ Centrality measures are used to identify the most important nodes in a network. They can help you understand the structure of the network and identify key nodes that are important for the network's connectivity.
 
-1. Compute the shortest-path betweenness centrality using `networkx.degree_centrality()` (see documentation [here](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.degree_centrality.html))
+1. Compute the shortest-path betweenness centrality using `networkx.betweenness_centrality()` (see documentation [here](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.betweenness_centrality.html))
 
 > [!IMPORTANT] 
 > You should add a weight to the edges of the graph to calculate the centrality based on the length of the edges. You can use the `length` attribute of the edges as the weight
@@ -125,7 +125,7 @@ Both of the libraries works with dataframes, so you need to convert the graph to
 
 3. Add the travel time to the graph as an edge attribute for walking. You can use the formula `time = distance / speed` to calculate the travel time for each edge. You can loop on the edges of the graph using `graph.edges(data=True)`. In the loop your can calculate the travel time for each edge and add it to the graph as an edge attribute.
 
-#### <u>ℹ️ Tips</u>:
+> [!TIP]
 <details>
     <summary>💡 If you face some issues to find the solution?</summary>
     <br>
@@ -165,6 +165,8 @@ def add_travel_time(G, speed, attribute_name='travel_time'):
 - Calculate the isochrones for different time intervals (e.g., 5, 10, 20 minutes) and compare the results. What do you observe?
 - Identify the amenities that are accessible within a 15-minute walk from the source address. Are all essential amenities accessible within a 15-minute walk?
 
+<br>
+--- 
 <br>
 
 Congratulations! 🎉 You have successfully completed the exercise. 
