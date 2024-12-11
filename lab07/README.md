@@ -32,6 +32,7 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 ## 🛝 Step-by-step guide
 
 ### 🧑🏻‍💻 Github Basics
+---
 
 #### 1. Git Setup
 
@@ -132,6 +133,7 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 
 
 ### 🤖 PPGIS Data Analysis with NLP
+---
 
 #### 1. Load the data from the parquet file
 
