@@ -38,16 +38,16 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 1. create an account on [GitHub](https://github.com/)
 2. install [Git](https://git-scm.com/downloads)
 3. create a new repository on GitHub (`repository` -> `new`)
-- select a name for the repository (e.g., `tampere_sentiment_analysis`)
-- select the repository to be public
-- initialize the repository with a README file
-- initialize the repository with a `.gitignore` file for Python
-- choose a license (e.g., MIT)
+    - select a name for the repository (e.g., `tampere_sentiment_analysis`)
+    - select the repository to be public
+    - initialize the repository with a README file
+    - initialize the repository with a `.gitignore` file for Python
+    - choose a license (e.g., MIT)
 4. clone the repository on your local machine using the command `git clone <repository-url>`
 > [!TIP]
 > you'll need to create a personal access token to clone the repository (👀 see [here](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token))
 
-**Your first repository is ready! 🎉 **
+**Your first repository is ready!** 🎉 
 
 
 #### 2. On your local machine
@@ -67,7 +67,7 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 5. check if the changes are correctly pushed on github
 
 
-**Your did your first commit! 🎉 **
+**Your did your first commit!** 🎉
 
 
 #### 3. On github
@@ -80,12 +80,14 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 
 1. modify the README file with additional information such as the date of the exercise
 2. try commit your changes and push them to the remote repository 
-- ```bash
+```bash
     git add .
     git commit -m "Updated README with the date of the exercise"
     git push origin main
-  ```
-- you should get an error because the remote repository has been updated since your last pull
+```
+> [!NOTE]
+> you will get an error message because the remote repository has been updated since your last commit
+
 > [!IMPORTANT] 
 > you should always pull the changes from the remote repository with `git pull` before pushing your changes to avoid conflicts
 > a good workflow is to always pull the changes from the remote repository before starting to work on your local repository
@@ -121,7 +123,7 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 4. check on github if the changes are correctly pushed
 
 
-**You completed your first conflict resolution! 🎉 **
+**You completed your first conflict resolution!** 🎉 
 
 
 >[!NOTE]
@@ -156,14 +158,14 @@ The data is available in a parquet file on GitHub: [tampere_sentiment_analysis.p
 #### 2. Create Sentiment Analysis Pipeline
 
 1. Choose a transformer-based NLP pipeline from the [Hugging Face library](https://huggingface.co/models)
-- select the task, section `Natural Language Processing` -> `text-classification`
-- click on the model of your choice (e.g. `cardiffnlp/twitter-roberta-base-sentiment-latest`)
-- Read the information of the model, outputs, examples
+    - select the task, section `Natural Language Processing` -> `text-classification`
+    - click on the model of your choice (e.g. `cardiffnlp/twitter-roberta-base-sentiment-latest`)
+    - Read the information of the model, outputs, examples
 2. Create a pipeline from the example, you need to use the `pipeline` function from the `transformers` library (see documentation [here](https://huggingface.co/docs/transformers/en/main_classes/pipelines))
 3. Test the pipeline with a simple sentence (e.g., _"I love this place, it's amazing"_)
 
-**❓ What is the sentiment of the sentence? 🤔 **
-**❓ Which is the output of the pipeline? 🤖 **
+❓ **What is the sentiment of the sentence?** 🤔 
+❓ **Which is the output of the pipeline?** 🤖 
 
 
 #### 3. Apply the pipeline to the comments and visualize the results
@@ -175,7 +177,7 @@ The data is available in a parquet file on GitHub: [tampere_sentiment_analysis.p
 >    <br>
 > You can use the `apply()` method of the geodataframe to apply the pipeline to each comment in the dataset.
 > </details>
-<br>
+
 2. Add the sentiment as a new column in the geodataframe
 3. Visualize the comments on a map using `folium` or `KeplerGL`
 
