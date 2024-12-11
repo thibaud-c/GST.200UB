@@ -47,9 +47,8 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 > [!TIP]
 > you'll need to create a personal access token to clone the repository (👀 see [here](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token))
 
----
-##### Your first repository is ready! 🎉
----
+**Your first repository is ready! 🎉 **
+
 
 #### 2. On your local machine
 
@@ -60,16 +59,16 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 3. commit the changes using the command `git commit -m "YOUR MESSAGE"`. Check the status of your repository.
 > [!NOTE]
 > your message should be short, meaningful, and written in the past tense. No date is needed because it is already linked to your commit.
-> You can verify your commit with the command `git log` (use q to exit)
-> the git log command shows the history of the commits in the repository with information such as the commit id, author, date, and message
+> You can verify your commit with the command `git log` (use q to exit).
+> The git log command shows the history of the commits in the repository with information such as the commit id, author, date, and message
 4. push the changes to the remote repository using the command `git push origin main`
 > [!NOTE]
-> main is the default branch name, but it can be different depending on the repository
-5. get on github and check if the changes are correctly pushed
+> `main` is the default branch name, but it can be different depending on the repository
+5. check if the changes are correctly pushed on github
 
----
-##### Your did your first commit! 🎉
----
+
+**Your did your first commit! 🎉 **
+
 
 #### 3. On github
 
@@ -97,6 +96,7 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
 > git commit -m "Updated README with the date of the exercise"
 > git push origin main
 > ```
+
 > [!TIP]
 > sometimes you might have to save your changes before pulling the changes from the remote repository
 > you can use `git stash` to save your changes before pulling and `git stash pop` to apply the changes back
@@ -105,8 +105,8 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
     git pull
   ```
 > [!IMPORTANT] 
-> if you are lucky you won't have any conflicts and the changes will be automatically merged, you can now push your changes
-> this is not often the case, and you might have to solve the conflicts manually
+> if you are lucky you won't have any conflicts and the changes will be automatically merged, you can now push your changes.
+> 🚧 This is not often the case, and you might have to solve the conflicts manually
 - you can use `git status` to see the files with conflicts
 - you can use a text editor to solve the conflicts
 > [!TIP]
@@ -120,11 +120,11 @@ You have been hired by the city of Tampere to analyze the geospatial data collec
   ```
 4. check on github if the changes are correctly pushed
 
----
-##### You completed your first conflict resolution! 🎉
----
 
->[!INFO]
+**You completed your first conflict resolution! 🎉 **
+
+
+>[!NOTE]
 > On your repository in settings you can add collaborators to your repository. Collaborators can push changes to the repository.
 > You can use the same workflow to collaborate with your fellow students on a project.
 
@@ -138,9 +138,10 @@ The data is available in a parquet file on GitHub: [tampere_sentiment_analysis.p
 > The geometry is projected in the Finish crs: `EPSG:3067`
 
 
-1. Load the data from the parquet file using `geopandas.read_parquet()` (see documentation [here](https://geopandas.org/en/stable/docs/reference/api/geopandas.read_parquet.html)) or duckdb
+1. Load the data from the parquet file using `geopandas.read_parquet()` (see documentation [here](https://geopandas.org/en/stable/docs/reference/api/geopandas.read_parquet.html)) or `duckdb`
 > [!NOTE]
 > remember duckDB can read by default parquet files, so you can use the query `SELECT * FROM ...` to load the data
+>
 > you should also load the spatial extension of duckdb to handle the geometry column `LOAD spatial`
 2. Check some basic information about the data such as the number of rows, columns, and the first rows of the data
 > [!TIP]
@@ -148,6 +149,7 @@ The data is available in a parquet file on GitHub: [tampere_sentiment_analysis.p
 3. if you are using duckdb, you should convert the SQL output in a geodataframe
 > [!TIP]
 > Export the geometry from the parquet in text using the function `ST_AsText(geometry_column) as geometry`
+>
 > Define the geometry column in the geodataframe using `geopandas.GeoSeries.from_wkt(geometry_column_in_dataframe)`
 
 
@@ -156,26 +158,23 @@ The data is available in a parquet file on GitHub: [tampere_sentiment_analysis.p
 1. Choose a transformer-based NLP pipeline from the [Hugging Face library](https://huggingface.co/models)
 - select the task, section `Natural Language Processing` -> `text-classification`
 - click on the model of your choice (e.g. `cardiffnlp/twitter-roberta-base-sentiment-latest`)
-- Read the information of the model, outputs, example
+- Read the information of the model, outputs, examples
 2. Create a pipeline from the example, you need to use the `pipeline` function from the `transformers` library (see documentation [here](https://huggingface.co/docs/transformers/en/main_classes/pipelines))
 3. Test the pipeline with a simple sentence (e.g., _"I love this place, it's amazing"_)
 
----
-##### ❓ What is the sentiment of the sentence? 🤔
-##### ❓ Which is the output of the pipeline? 🤖
----
+**❓ What is the sentiment of the sentence? 🤔 **
+**❓ Which is the output of the pipeline? 🤖 **
+
 
 #### 3. Apply the pipeline to the comments and visualize the results
 
 1. Apply the pipeline to the comments in the dataset.
 > [!TIP]
-<details>
-    <summary>💡 Are you blocked? </summary>
-    <br>
-
-You can use the `apply()` method of the geodataframe to apply the pipeline to each comment in the dataset.
-
-</details>
+> <details>
+>    <summary>💡 Are you blocked? </summary>
+>    <br>
+> You can use the `apply()` method of the geodataframe to apply the pipeline to each comment in the dataset.
+> </details>
 <br>
 2. Add the sentiment as a new column in the geodataframe
 3. Visualize the comments on a map using `folium` or `KeplerGL`
@@ -185,8 +184,6 @@ You can use the `apply()` method of the geodataframe to apply the pipeline to ea
 - Aggregate the sentiment of the comments by district and create 2 choropleth maps to visualize the positive and negative comments in the city.
 - Push your notebook solution to the remote GitHub repository
 
-<br>
 --- 
-<br>
 
-Congratulations! 🎉 You have successfully completed the exercise. 
+**Congratulations! 🎉 You have successfully completed the exercise.** 
