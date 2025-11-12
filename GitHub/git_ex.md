@@ -1,7 +1,7 @@
 # 🧑🏻‍💻 Github Basics
 ---
 
-## 1. Git Setup
+## 1. Git Setup :)
 
 1. create an account on [GitHub](https://github.com/)
 2. install [Git](https://git-scm.com/downloads)
