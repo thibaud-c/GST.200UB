@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+__marimo__/
+.env
+.DS_Store
+lab_01/data/
