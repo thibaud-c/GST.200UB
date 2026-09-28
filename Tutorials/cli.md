@@ -95,14 +95,14 @@ An absolute path starts at a filesystem root or drive. A relative path depends o
 Windows often displays backslashes in paths. The relative paths with forward slashes used in these tutorials also work with PowerShell's navigation commands.
 
 > [!CAUTION]
-> For now on, you should use **only** relative paths. This ensures compatibility across different systems.
+> Use relative paths for course data so another person can use the same folder structure. A relative path still needs the correct starting folder.
 
 Try reading the first lines of this tutorial from the course root.
 
 **Windows PowerShell:**
 
 ```powershell
-Get-Content tutorials/cli.md -TotalCount 5
+Get-Content Tutorials/cli.md -TotalCount 5
 ```
 
 **macOS/Linux:**
@@ -112,6 +112,27 @@ head -n 5 tutorials/cli.md
 ```
 
 These commands display text; they do not edit it.
+
+### Relative paths in a notebook
+
+A relative path starts at Python's **working directory**, which need not be the folder open in your separate terminal. Save your notebook first. The VS Code marimo extension normally starts its kernel in the notebook's folder. Check this in a Python cell when you first use files:
+
+```python
+from pathlib import Path
+Path.cwd()
+```
+
+For `practice/duckdb_parks.py`, the expected working folder is `practice`. With that starting point:
+
+| Path in Python or SQL | File in the repository |
+| --- | --- |
+| `data/parks.csv` | `practice/data/parks.csv` |
+| `learning_log.md` | `practice/learning_log.md` |
+| `../README.md` | The course README |
+
+If the output is the course root instead, use `practice/data/parks.csv`. If you move the working folder or launch the notebook another way, recheck the path. Do not guess or paste a personal absolute path into shared code.
+
+Try `Path("learning_log.md").exists()` in another cell. It should return `True` after the VS Code exercise. Moving around in a separate terminal does not change the notebook's working folder. We do not need a notebook-directory helper for these examples.
 
 ## 4. Create and enter a folder
 

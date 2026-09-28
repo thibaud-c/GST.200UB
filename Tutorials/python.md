@@ -9,7 +9,8 @@ Write these in Python cells inside your VS Code marimo notebook.
 | Python | Meaning |
 | --- | --- |
 | `area_ha = 0.5` | Assign a value to a name |
-| `print(area_ha)` | Display a value |
+| `area_ha` | Display the last expression in a notebook cell |
+| `print(area_ha)` | Print a value, including from inside a loop |
 | `areas = [0.5, 1.2, 2.0]` | Make a list |
 | `areas[0]` | Read the first item |
 | `len(areas)` / `sum(areas)` | Count / add the items |
@@ -42,10 +43,13 @@ Mur Meadow
 5000.0
 ```
 
-A hectare is 10,000 square metres. Here, `=` assigns a value to a name, and `*` multiplies two numbers. `print(...)` calls a function that displays its argument. These are invented park measurements.
+A hectare is 10,000 square metres. Here, `=` assigns a value to a name, and `*` multiplies two numbers. `print(...)` calls a function that displays its argument.
 
 > [!IMPORTANT]
 > Run the examples as notebook cells in VS Code. Each block below goes in a new Python cell unless the instructions tell you to edit an existing one. Define a shared variable in only one cell; edit that definition when you want a different value.
+
+> [!TIP]
+> A notebook displays the **last expression** in a cell without `print`. Try a cell containing just `area_m2`. A table, plot, or map can also be the final expression. An assignment such as `area_m2 = 5000` does not display a value by itself. Use `print` when you want several text outputs or output from inside a loop.
 
 ## 2. Names and types
 
@@ -134,28 +138,44 @@ assert large_areas == [1.2, 2.0]
 
 Run the cell. The new printed value is `5000.0`, followed by no assertion error. If you later change `park_areas`, reconsider the expected list in the last check too.
 
-## 6. Find a file from the notebook
+## 6. Import libraries and use their functions
 
-Python can load reusable code with `import`. Add this Python cell if marimo has not already supplied the import:
+Python's many libraries provide tools for specialised work, including spatial data analysis. A **library** is a collection of reusable code. `import` makes its modules available in your notebook. Installing a package with uv and importing it in Python are separate steps: the course's `uv sync` handles installation.
 
-```python
-import marimo as mo
-```
-
-In a separate cell:
+In a new cell:
 
 ```python
-learning_log = mo.notebook_dir() / "learning_log.md"
-print(learning_log)
-print(learning_log.exists())
+import geopandas as gpd
 ```
 
-`as mo` gives the module a shorter name. A dot accesses something supplied by that module or object. `mo.notebook_dir()` gives the saved notebook's folder, and `/` joins it to a filename. For `practice/python_basics.py`, the result points to `practice/learning_log.md`.
+`as gpd` gives GeoPandas a short name. The dot in `gpd.points_from_xy(...)` accesses a function supplied by the library. A dot can also access an object's method, such as `sites.buffer(...)`, or an attribute, such as `sites.crs`. Functions and methods use parentheses; an attribute usually does not.
 
-`.exists()` checks whether the file exists. Expect `True` if you created the learning log in the VS Code tutorial. See [marimo's path helper](https://docs.marimo.io/api/miscellaneous/#marimo.notebook_dir) and the [Python pathlib reference](https://docs.python.org/3/library/pathlib.html).
+Run this in another cell:
+
+```python
+sites = gpd.GeoDataFrame(
+    {"name": ["Site A", "Site B"]},
+    geometry=gpd.points_from_xy([500000, 500600], [5210000, 5210300]),
+    crs="EPSG:32633",
+)
+sites
+```
+
+This is a small spatial table. The coordinate system uses metres around Graz. You supplied two x coordinates, two y coordinates, and two names. A **GeoDataFrame** combines a table with a geometry column and its coordinate system.
+
+In a new cell:
+
+```python
+site_buffers = sites.buffer(250)
+site_buffers.plot(alpha=0.4)
+```
+
+GeoPandas supplies the buffer and plotting methods. Here a buffer covers locations within 250 metres of each point; `.plot()` draws those polygons. `alpha` controls transparency. Change 250 to 500 in the original cell and inspect the overlap. Do not buffer longitude/latitude coordinates in degrees when you need metres.
 
 > [!NOTE]
-> Save the notebook before resolving paths. Using its directory keeps this path useful even when your separate terminal is open somewhere else.
+> Use one import per library in the notebook. If you need another package, add it with `uv add package-name` in your separate terminal, then import its Python module. Package and import names sometimes differ.
+
+[GeoPandas' introduction](https://geopandas.org/en/stable/getting_started/introduction.html) explains these objects with more worked examples. The [visualization tutorial](visualization.md) develops the plotting side. For files, use relative paths and check your working folder as explained in [terminal and notebook paths](cli.md#relative-paths-in-a-notebook).
 
 ## 7. Read an error before changing code
 

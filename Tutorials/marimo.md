@@ -12,7 +12,7 @@
 | Run a cell | Click its run button |
 | Run pending dependent cells | **marimo: Run stale cells** |
 | Restart execution | **marimo: Restart notebook kernel** |
-| Find files beside the notebook | `mo.notebook_dir()` in a Python cell |
+| Inspect a value | Put it on the last line of a cell |
 
 Allow about 30 to 45 minutes. Complete the [VS Code extension setup](vscode.md#5-install-python-and-marimo-support) and run `uv sync` in your separate terminal first. You will edit and run the notebook inside VS Code. The Python examples are small; the next tutorial explains the language in more detail.
 
@@ -122,19 +122,11 @@ Before `git pull`, save and use **marimo: Shut Down Kernel**, available in the n
 > [!WARNING]
 > In automatic mode, dependent cells can rerun when an input changes. Keep file writes and downloads out of cells driven by sliders unless you intend to repeat those actions.
 
-## 7. Locate files beside your notebook
+## 7. Use relative paths and SQL cells
 
-The extension may start Python in the notebook's folder. A separate terminal can be somewhere else. Use a path relative to the saved notebook when reading its input files.
+Use a relative path such as `data/parks.csv` for a file inside the notebook's working folder. Check that folder with `Path.cwd()` if a file cannot be found. The [CLI tutorial](cli.md#relative-paths-in-a-notebook) explains why the terminal and notebook can start in different places.
 
-In a new Python cell:
-
-```python
-log_path = mo.notebook_dir() / "learning_log.md"
-print(log_path)
-print(log_path.exists())
-```
-
-For `practice/first_notebook.py`, this locates `practice/learning_log.md`. `mo.notebook_dir()` returns the notebook folder; `/` joins it to a filename. `.exists()` should return `True` if you created the log. Save the notebook before using this helper. See [marimo's notebook-directory reference](https://docs.marimo.io/api/miscellaneous/#marimo.notebook_dir).
+marimo also has SQL cells. Choose **SQL** in the cell-language selector or add-cell menu, then enter a query directly. The [DuckDB tutorial](duckdb.md) shows how to name results and reuse them in later cells. SQL cells are saved as Python in the `.py` file; the editor handles that translation.
 
 ## If the notebook behaves unexpectedly
 

@@ -18,7 +18,9 @@ Once you have a clone, follow this order if all the tools are new to you:
 | [4. uv](uv.md) | Sync packages, add or remove a package, and choose Python | 25 to 35 min |
 | [5. marimo in VS Code](marimo.md) | Create cells, run a notebook, and use a slider | 30 to 45 min |
 | [6. Python in marimo](python.md) | Work with values, lists, conditions, and functions | 45 to 60 min |
-| [7. DuckDB in marimo](duckdb.md) | Query local tables and remote Overture Parquet data | 60 to 90 min |
+| [7. DuckDB in marimo](duckdb.md) | Query local tables and remote Parquet data in SQL cells | 60 to 90 min |
+| [8. Readable Python and AI-generated code](code_practices.md) | Name, organise, explain, and check your code | 30 to 45 min |
+| [9. Visualization](visualization.md) | Make charts with Plotly and maps with Kepler.gl | 30 to 45 min |
 
 The VS Code guide points you to uv when you need the Python environment. You can read the cheatsheet first and return to the full explanation when a step is unfamiliar.
 
@@ -34,7 +36,7 @@ The VS Code guide points you to uv when you need the Python environment. You can
 > [!TIP]
 > Run terminal commands one line at a time. Copy the command, not an example prompt or its output. If a command fails, read the message before moving to the next line.
 
-The **course root** is the `GST.200UB` folder containing `pyproject.toml`. Terminal commands in these guides start there unless a step explicitly changes folder. Notebook data paths start at the saved notebook's own folder.
+The **course root** is the `GST.200UB` folder containing `pyproject.toml`. Terminal commands in these guides start there unless a step explicitly changes folder. Notebook data paths start at Python's working directory. Check it once with `Path.cwd()`; see [relative paths](cli.md#relative-paths-in-a-notebook).
 
 ## The tools in one sentence each
 
@@ -51,7 +53,7 @@ The **course root** is the `GST.200UB` folder containing `pyproject.toml`. Termi
 Predict a result before running the example. Change one input, run again, and explain the difference. Keep short notes in `practice/learning_log.md`, which you create in the VS Code guide.
 
 > [!NOTE]
-> The small park datasets in these guides are fictional. The Overture section uses live geographic data, so its results depend on the selected release and area.
+> The small datasets we construct for teaching in the tutorials and lab demonstrations are fictional. OSMnx and Overture queries use live geographic data; their results depend on the retrieval date, release, and area.
 
 If you get stuck, include the tutorial step, your operating system, the code or command, and its complete error message when asking for help. [Useful discussions count as course participation](../README.md#help-improve-the-class).
 
@@ -59,11 +61,13 @@ If you get stuck, include the tutorial step, your operating system, the code or 
 
 These courses and books informed the examples and teaching approach. They use different environments and may assume prior experience. Use the GST200B setup instructions for this class.
 
+- [EfficientGeodataPython from Uni Graz (DE)](https://github.com/hkristen/EfficientGeodataPython2024): structured geospatial workflows with Python.
 - [Introduction to GIS Programming](https://gispro.gishub.org/): software setup, Python basics, and geospatial applications.
-- [Geographic Data Science with Python](https://geographicdata.science/book/): analysis and interpretation of geographic data.
 - [UW Geospatial Data Analysis with Python](https://uwgda-jupyterbook.readthedocs.io/en/latest/intro.html): shell and Git skills, demonstrations, and exercises.
 - [PyGIS](https://pygis.io/docs/a_intro.html): programming applied to geographic questions.
+
+### Advanced resources
+
 - [Advanced Geospatial Analytics with Python](https://hamedalemo.github.io/advanced-geo-python/intro.html): further study after the foundations.
+- [Geographic Data Science with Python](https://geographicdata.science/book/): analysis and interpretation of geographic data.
 - [Hands-on GeoAI](https://handson-geoai.readthedocs.io/en/latest/index.html): learning objectives followed by practical work.
-
-

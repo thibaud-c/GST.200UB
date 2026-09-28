@@ -167,6 +167,19 @@ Use [the course Discussions page](https://github.com/thibaud-c/GST.200UB/discuss
 
 Useful contributions count as participation. Follow [the issue-writing steps in the course README](../README.md#help-improve-the-class). Do not create an issue just to report that a tutorial worked.
 
+## 7. Work in a group repository
+
+Keep your course clone for receiving materials. For each project, one member creates a separate repository on GitHub and invites the others through **Settings > Collaborators**. Choose visibility with the instructor. Never put participant responses in it.
+
+1. The owner creates the repository with a README. Each member clones that repository into a sibling folder, outside the course clone.
+2. Copy one complete starter folder's contents into the group repository. Copy the group contract too.
+3. Configure your commit name and email there, as in section 2. Run `git config pull.rebase false` in this clone as well.
+4. Before editing, run `git pull`. Agree who edits which file. Save, stage named files, review, and commit as above.
+5. Run `git push` to share committed work. Use Git's browser sign-in flow when prompted. A normal GitHub password is not used as an HTTPS Git password. Never paste tokens into project files or shared messages.
+6. Other members run `git pull` to receive the changes. If a push is rejected because the remote has newer commits, pull, resolve any conflict, test, then push again.
+
+`git remote -v` tells you where a push will go. A permission error in the instructor's repository usually means you are in the course clone instead of the group repository. Each member keeps their own local clone; avoid editing one shared cloud-synced folder simultaneously.
+
 ## Documentation and a blog walkthrough
 
 - [Git pull](https://git-scm.com/docs/git-pull) and [Git merge](https://git-scm.com/docs/git-merge): receiving updates and completing merges.

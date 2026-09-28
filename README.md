@@ -1,4 +1,6 @@
-# University of Graz: GST200B
+# Advanced GIS Analysis 2: Reproducible spatial analysis with Python
+
+University of Graz: GST200B
 
 Course materials for GST200B, winter semester 2026. We use Python, marimo, and DuckDB to work with geographic data, including OpenStreetMaps and Overture Maps. This repository contains the exercises, supporting tutorials, and solutions released during the course.
 
@@ -37,7 +39,7 @@ git config pull.rebase false
 ls
 ```
 
-`cd ~` takes you to your home folder. `mkdir` creates a folder, and `cd` enters it. If `university` already exists, skip `mkdir university`, it is recommanded to use the folder you usually use for your classes. The clone creates a local `GST.200UB` folder containing the files and their Git history. The `git config` command tells this copy to merge incoming updates into your local work. You should see `README.md`, `tutorials`, and `pyproject.toml`. See [terminal navigation](tutorials/cli.md) if you get lost.
+`cd ~` takes you to your home folder. `mkdir` creates a folder, and `cd` enters it. **It is recommanded to use the folder you usually use for your classes**, the `university` folder is only an example. The clone creates a local `GST.200UB` folder containing the files and their Git history. The `git config` command tells this copy to merge incoming updates into your local work. You should see `README.md`, `tutorials`, and `pyproject.toml`. See [terminal navigation](tutorials/cli.md) if you get lost.
 
 > [!IMPORTANT]
 > Clone once. Keep using this same folder throughout the course so you can receive new materials with `git pull`.
@@ -71,14 +73,19 @@ git pull
 uv sync
 ```
 
-The instructor will push new exercises, corrections, and solutions between classes. `git pull` brings those changes into your existing copy. `uv sync` installs any changed package requirements. Reopen the notebook in VS Code after the update.
+New exercises, corrections, and solutions with be updated between classes. `git pull` brings those changes into your existing copy. `uv sync` installs any changed package requirements. Reopen the notebook in VS Code after the update.
 
 > [!NOTE]
-> Your edits and an instructor update may change the same lines. This is a normal merge conflict. Follow [the conflict-resolution walkthrough](tutorials/git.md#5-resolve-a-merge-conflict) to keep the changes you need from both versions.
+> Your edits and an update may change the same lines. This is a normal merge conflict. Follow [the conflict-resolution walkthrough](tutorials/git.md#5-resolve-a-merge-conflict) to keep the changes you need from both versions.
 
 ## Find the materials
 
 Use the lab instructions for tasks. The tutorials are supporting material for learning or revisiting the tools.
+
+- [Lab 01: average distance to BILLA in Graz](lab_01/README.md): instructions, source post, and marimo notebook.
+- [Lab 02: EDA and crime hotspot analysis](lab_02/README.md): source paper, training examples, and marimo exercise.
+- [Lab 03: network analysis and routing in Graz](lab_03/README.md): graph training and two paper adaptations.
+- [Tutorials and cheatsheets](tutorials/README.md): setup, Python, SQL, code practices, and visualization.
 
 ## Help improve the class
 
