@@ -11,7 +11,7 @@
 | `figure` | Display a figure as the last expression |
 | `import leafmap.kepler as leafmap` | Load the interactive map |
 | `map_view.add_gdf(points, layer_name="Stores")` | Add a named geographic layer |
-| `mo.ui.anywidget(map_view)` | Display the Kepler widget inside marimo |
+| `map_view` | Display the Kepler widget inside marimo (print the map object) |
 | `points.to_crs(4326)` | Prepare longitude/latitude for a web map |
 
 Allow 30 to 45 minutes. Run `uv sync` in the course folder, then create `practice/visualization.py` in VS Code with the course kernel. Keep imports in one Python cell and each example in its own cell.
@@ -91,7 +91,7 @@ In a new Python cell:
 ```python
 map_view = leafmap.Map(center=[47.075, 15.44], zoom=12, height=500)
 map_view.add_gdf(map_points, layer_name="Example locations")
-mo.ui.anywidget(map_view)
+map_view
 ```
 
 `leafmap.Map` creates the map. `center` takes latitude then longitude; `zoom` controls how close the view starts. These values open the map around our points near Graz. `add_gdf` adds a GeoDataFrame, and the final line displays the interactive map inside marimo.
@@ -122,7 +122,7 @@ A basemap and a polished legend do not validate a method. Ask what is absent fro
 - [Plotly Express](https://plotly.com/python/plotly-express/) and [bar charts](https://plotly.com/python/bar-charts/): worked examples.
 - [Introducing Plotly Express](https://medium.com/plotly/introducing-plotly-express-808df010143d): Plotly's illustrated blog walkthrough. Use the current `import plotly.express as px` syntax from this tutorial.
 - [Leafmap Kepler walkthrough](https://leafmap.org/notebooks/26_kepler_gl/) and [layer controls](https://docs.kepler.gl/docs/user-guides/c-types-of-layers): loading data and adjusting maps.
-- [marimo Plotly integration](https://docs.marimo.io/api/plotting/plotly/) and [anywidget integration](https://docs.marimo.io/api/inputs/anywidget/).
+- [marimo Plotly integration](https://docs.marimo.io/api/plotting/plotly/).
 
 ## Exercise: make the view answer a question
 

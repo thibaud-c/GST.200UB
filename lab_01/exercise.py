@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.0"
+__generated_with = "0.24.2"
 app = marimo.App(width="medium")
 
 
@@ -108,7 +108,7 @@ def _(ox):
     ox.settings.cache_folder = "data/osmnx_cache"
     example_boundary = ox.geocode_to_gdf("Salzburg, Austria")
     example_boundary[["display_name", "geometry"]]
-    return (example_boundary,)
+    return
 
 
 @app.cell
@@ -395,19 +395,19 @@ def _(mo):
 
     The map displays directly in marimo. Use longitude/latitude for this web
     map, while keeping the metric tables for calculations. We use Leafmap’s Kepler
-    backend: `add_gdf` adds a GeoDataFrame and `mo.ui.anywidget` displays the map.
+    backend: `add_gdf` adds a GeoDataFrame and printing the map object displays it.
     Leafmap also offers other backends; see the visualization tutorial for tradeoffs.
     """)
     return
 
 
 @app.cell
-def _(leafmap, mo, toy_city, toy_selected, toy_zones):
+def _(leafmap, toy_city, toy_selected, toy_zones):
     toy_map = leafmap.Map(center=[47.045, 15.005], zoom=14, height=500)
-    toy_map.add_gdf(toy_city.to_crs(4326), layer_name="City boundary")
-    toy_map.add_gdf(toy_zones.to_crs(4326), layer_name="Distance zones")
     toy_map.add_gdf(toy_selected.to_crs(4326), layer_name="Store points")
-    mo.ui.anywidget(toy_map)
+    toy_map.add_gdf(toy_zones.to_crs(4326), layer_name="Distance zones")
+    toy_map.add_gdf(toy_city.to_crs(4326), layer_name="City boundary")
+    toy_map
     return
 
 
@@ -724,7 +724,7 @@ def _(mo):
     ## Task 5. Explore BILLA and the distance zones in Kepler
 
     Follow Part A6. Use `leafmap.Map` and `add_gdf` to add the city, BILLA points, and the cumulative
-    zones in EPSG:4326, then display it directly with `mo.ui.anywidget`.
+    zones in EPSG:4326, then print the map object to display it directly.
     Start with `leafmap.Map(center=[47.07, 15.44], zoom=11, height=500)`.
     Label distances in metres and retain **© OpenStreetMap contributors**.
 
