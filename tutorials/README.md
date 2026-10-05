@@ -12,17 +12,17 @@ Once you have a clone, follow this order if all the tools are new to you:
 
 | Tutorial | What you practise | Approximate time |
 | --- | --- | --- |
-| [1. VS Code](vscode.md) | Open the project, write Markdown, install the marimo extension | 20 to 30 min |
-| [2. Terminal and paths](cli.md) | Navigate in a separate terminal and locate files | 25 to 35 min |
-| [3. Git and GitHub](git.md) | Save changes, pull class updates, and resolve conflicts | 40 to 60 min |
-| [4. uv](uv.md) | Sync packages, add or remove a package, and choose Python | 25 to 35 min |
-| [5. marimo in VS Code](marimo.md) | Create cells, run a notebook, and use a slider | 30 to 45 min |
-| [6. Python in marimo](python.md) | Work with values, lists, conditions, and functions | 45 to 60 min |
-| [7. DuckDB in marimo](duckdb.md) | Query local tables and remote Parquet data in SQL cells | 60 to 90 min |
-| [8. Readable Python and AI-generated code](code_practices.md) | Name, organise, explain, and check your code | 30 to 45 min |
-| [9. Visualization](visualization.md) | Make charts with Plotly and maps with Kepler.gl | 30 to 45 min |
+| [1. uv](01_uv.md) | Install uv and prepare Python and the course packages | 25 to 35 min |
+| [2. VS Code](02_vscode.md) | Open the project, write Markdown, install the marimo extension | 20 to 30 min |
+| [3. Terminal and paths](03_cli.md) | Navigate in a separate terminal and locate files | 25 to 35 min |
+| [4. Git and GitHub](04_git.md) | Save changes, pull class updates, and resolve conflicts | 40 to 60 min |
+| [5. marimo in VS Code](05_marimo.md) | Create cells, run a notebook, and use a slider | 30 to 45 min |
+| [6. Python in marimo](06_python.md) | Work with values, lists, conditions, and functions | 45 to 60 min |
+| [7. DuckDB in marimo](07_duckdb.md) | Query local tables and remote Parquet data in SQL cells | 60 to 90 min |
+| [8. Readable Python and AI-generated code](08_code_practices.md) | Name, organise, explain, and check your code | 30 to 45 min |
+| [9. Visualization](09_visualization.md) | Make charts with Plotly and maps with Kepler.gl | 30 to 45 min |
 
-The VS Code guide points you to uv when you need the Python environment. You can read the cheatsheet first and return to the full explanation when a step is unfamiliar.
+Start with uv so the course environment exists before selecting a notebook kernel. The cloning steps in the course README introduce the navigation commands needed for this setup. Filenames and headings use the same numbers, so you can follow the order in GitHub's file list. Exercise steps link back to the sections that explain them.
 
 ## Where to type
 
@@ -36,7 +36,7 @@ The VS Code guide points you to uv when you need the Python environment. You can
 > [!TIP]
 > Run terminal commands one line at a time. Copy the command, not an example prompt or its output. If a command fails, read the message before moving to the next line.
 
-The **course root** is the `GST.200UB` folder containing `pyproject.toml`. Terminal commands in these guides start there unless a step explicitly changes folder. Notebook data paths start at Python's working directory. Check it once with `Path.cwd()`; see [relative paths](cli.md#relative-paths-in-a-notebook).
+The **course root** is the `GST.200UB` folder containing `pyproject.toml`. Terminal commands in these guides start there unless a step explicitly changes folder. Notebook data paths start at Python's working directory. Check it once with `Path.cwd()`; see [relative paths](03_cli.md#relative-paths-in-a-notebook).
 
 ## The tools in one sentence each
 

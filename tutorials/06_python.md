@@ -1,6 +1,6 @@
 # 6. Learn Python in a marimo notebook
 
-[Tutorial index](README.md) · Previous: [marimo](marimo.md) · Next: [DuckDB](duckdb.md)
+[Tutorial index](README.md) · Previous: [marimo](05_marimo.md) · Next: [DuckDB](07_duckdb.md)
 
 ## Cheatsheet
 
@@ -18,13 +18,13 @@ Write these in Python cells inside your VS Code marimo notebook.
 | `def hectares_to_m2(area):` | Start a function definition |
 | `assert 0.5 * 10000 == 5000` | Check an expected result |
 
-Allow about 45 to 60 minutes. Complete the [marimo setup](marimo.md) first. No previous Python knowledge is assumed.
+Allow about 45 to 60 minutes. Complete the [marimo setup](05_marimo.md) first. No previous Python knowledge is assumed.
 
 You will calculate an area, work through a list, select values with a condition, and write a reusable function.
 
 ## 1. Create a notebook and run a cell
 
-In VS Code, open the Command Palette with **Cmd+Shift+P** on macOS or **Ctrl+Shift+P** on Windows/Linux. Choose **Create: New marimo notebook**, save it as `practice/python_basics.py`, and select the course `.venv` as its kernel.
+In VS Code, open the Command Palette with **Cmd+Shift+P** on macOS or **Ctrl+Shift+P** on Windows/Linux. Choose **Create: New marimo notebook**, save it as `practice/python_basics.py`, and select the course `.venv` as its kernel. See [creating a notebook, marimo section 2](05_marimo.md#2-open-or-create-a-notebook), if you need the setup steps again.
 
 Paste this into a **Python cell** and click its run button:
 
@@ -175,7 +175,7 @@ GeoPandas supplies the buffer and plotting methods. Here a buffer covers locatio
 > [!NOTE]
 > Use one import per library in the notebook. If you need another package, add it with `uv add package-name` in your separate terminal, then import its Python module. Package and import names sometimes differ.
 
-[GeoPandas' introduction](https://geopandas.org/en/stable/getting_started/introduction.html) explains these objects with more worked examples. The [visualization tutorial](visualization.md) develops the plotting side. For files, use relative paths and check your working folder as explained in [terminal and notebook paths](cli.md#relative-paths-in-a-notebook).
+[GeoPandas' introduction](https://geopandas.org/en/stable/getting_started/introduction.html) explains these objects with more worked examples. The [visualization tutorial](09_visualization.md) develops the plotting side. For files, use relative paths and check your working folder as explained in [terminal and notebook paths](03_cli.md#relative-paths-in-a-notebook).
 
 ## 7. Read an error before changing code
 
@@ -199,14 +199,14 @@ Try a small deliberate mistake: change one use of `area_ha` to `area_h`, run, an
 
 ## Exercise: compare areas
 
-Use **Create: New marimo notebook** and save `practice/area_exercise.py`, so you keep the worked example intact. Choose the course `.venv` kernel.
+Use **Create: New marimo notebook** and save `practice/area_exercise.py`, so you keep the worked example intact. Choose the course `.venv` kernel (see [section 1](#1-create-a-notebook-and-run-a-cell) and [marimo section 2](05_marimo.md#2-open-or-create-a-notebook)).
 
-1. Define `areas = [0.25, 1.0, 1.75, 3.0]` and `threshold = 1.0` in one cell.
-2. In another cell, use a loop and a condition to collect areas at least as large as `threshold`.
-3. Print how many areas you selected and their total in hectares.
-4. Convert that total to square metres with a function.
-5. Add an assertion for the expected selected total. Predict what changes when the threshold becomes `2.0`, then try it and update the check.
-6. Write two sentences in your learning log: why does `>=` matter at the boundary, and what would go wrong if one input were already in square metres?
+1. Define `areas = [0.25, 1.0, 1.75, 3.0]` and `threshold = 1.0` in one cell (see [section 2](#2-names-and-types) and [section 3](#3-store-several-values-in-a-list)).
+2. In another cell, use a loop and a condition to collect areas at least as large as `threshold` (see [section 4](#4-repeat-a-calculation-and-make-a-choice)).
+3. Print how many areas you selected and their total in hectares (see [section 3](#3-store-several-values-in-a-list)).
+4. Convert that total to square metres with a function (see [section 5](#5-name-a-calculation-with-a-function)).
+5. Add an assertion for the expected selected total. Predict what changes when the threshold becomes `2.0`, then try it and update the check (see [section 5](#5-name-a-calculation-with-a-function)).
+6. Write two sentences in your learning log: why does `>=` matter at the boundary, and what would go wrong if one input were already in square metres (see [section 3](#3-store-several-values-in-a-list), [section 4](#4-repeat-a-calculation-and-make-a-choice), and [editing Markdown, VS Code section 4](02_vscode.md#4-create-a-file-and-preview-it))?
 
 You are done when you have run the notebook, checked both thresholds, and recorded your explanation. Save it, restart its kernel, and check that the results can be reproduced.
 

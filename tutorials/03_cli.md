@@ -1,6 +1,6 @@
-# 2. Find your way around the terminal
+# 3. Find your way around the terminal
 
-[Tutorial index](README.md) · Previous: [VS Code](vscode.md) · Next: [Git and GitHub](git.md)
+[Tutorial index](README.md) · Previous: [VS Code](02_vscode.md) · Next: [Git and GitHub](04_git.md)
 
 ## Cheatsheet
 
@@ -17,7 +17,7 @@ Run these in a separate PowerShell or Terminal window.
 | `cd "field notes"` | Enter a folder whose name contains a space |
 | **Ctrl+C** | Interrupt a running command |
 
-Allow about 25 to 35 minutes. Start with the course root open in VS Code and the `practice` folder from tutorial 1.
+Allow about 25 to 35 minutes. Start with the course root open in VS Code and the `practice` folder from [tutorial 2, section 4](02_vscode.md#4-create-a-file-and-preview-it).
 
 You will learn to check your location, list files, create a folder, and explain a relative path.
 
@@ -71,7 +71,7 @@ Read the result after each line.
 | `ls` | List the current folder | At the course root, you see `pyproject.toml` |
 | `cd tutorials` | Change directory to the child named `tutorials` | Usually no output on success |
 | `pwd` | Show the current location | The path now ends in `tutorials` |
-| `ls` | List that folder | You see files such as `cli.md` |
+| `ls` | List that folder | You see files such as `03_cli.md` |
 | `cd ..` | Move to the parent directory | You return to the course root |
 
 PowerShell uses `Get-ChildItem` for `ls` and `Set-Location` for `cd`. We use the short names for navigation, but other commands and options can differ between shells. The [PowerShell location guide](https://learn.microsoft.com/en-us/powershell/scripting/samples/managing-current-location?view=powershell-7.5) explains its full commands.
@@ -84,13 +84,13 @@ A path describes where a file or folder is located.
 | --- | --- |
 | `.` | The current directory |
 | `..` | The parent directory |
-| `tutorials/cli.md` | A relative path, starting from the current directory |
+| `tutorials/03_cli.md` | A relative path, starting from the current directory |
 | `/Users/Sam/Documents/GST.200UB` | An example absolute path on macOS |
 | `/home/sam/Documents/GST.200UB` | An example absolute path on Linux |
 | `C:\Users\Sam\Documents\GST.200UB` | An example absolute path on Windows |
 | `~` | Your user home directory in our three shells |
 
-An absolute path starts at a filesystem root or drive. A relative path depends on where you begin. From the course root, this tutorial is `tutorials/cli.md`. From inside `practice`, it is `../tutorials/cli.md`.
+An absolute path starts at a filesystem root or drive. A relative path depends on where you begin. From the course root, this tutorial is `tutorials/03_cli.md`. From inside `practice`, it is `../tutorials/03_cli.md`.
 
 Windows often displays backslashes in paths. The relative paths with forward slashes used in these tutorials also work with PowerShell's navigation commands.
 
@@ -102,20 +102,23 @@ Try reading the first lines of this tutorial from the course root.
 **Windows PowerShell:**
 
 ```powershell
-Get-Content Tutorials/cli.md -TotalCount 5
+Get-Content tutorials/03_cli.md -TotalCount 5 -Encoding UTF8
 ```
 
 **macOS/Linux:**
 
 ```sh
-head -n 5 tutorials/cli.md
+head -n 5 tutorials/03_cli.md
 ```
 
 These commands display text; they do not edit it.
 
+> [!TIP]
+> If PowerShell displays wrongly encoded characters, read it with `-Encoding UTF8`, as above. UTF-8 tells PowerShell how to decode the text. The course files use UTF-8; you do not need to change the file to fix this display problem. See [Microsoft's Get-Content reference](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-content#-encoding).
+
 ### Relative paths in a notebook
 
-A relative path starts at Python's **working directory**, which need not be the folder open in your separate terminal. Save your notebook first. The VS Code marimo extension normally starts its kernel in the notebook's folder. Check this in a Python cell when you first use files:
+A relative path starts at Python's **working directory**, which need not be the folder open in your separate terminal. Return to this example once you have created a notebook using [marimo section 2](05_marimo.md#2-open-or-create-a-notebook). Save your notebook first. The VS Code marimo extension normally starts its kernel in the notebook's folder. Check this in a Python cell when you first use files:
 
 ```python
 from pathlib import Path
@@ -162,14 +165,14 @@ Later you will use:
 uv run python --version
 ```
 
-This is a preview, not a command to run before installing uv.
+If you completed [uv section 2](01_uv.md#2-install-the-course-packages), you can run this from the course root. Otherwise, finish that setup first.
 
 - `uv` is the program being started.
 - `run` asks it to run another command in the project environment.
 - `python` is the program uv will run.
 - `--version` asks Python to print its version.
 
-An option such as `--version` changes what a command does. A path such as `tutorials/cli.md` is an argument giving the command something to work on. Options belong to particular programs; do not assume every program supports the same ones.
+An option such as `--version` changes what a command does. A path such as `tutorials/03_cli.md` is an argument giving the command something to work on. Options belong to particular programs; do not assume every program supports the same ones.
 
 ## 6. Stop a running command
 
@@ -196,11 +199,11 @@ An option such as `--version` changes what a command does. A path such as `tutor
 
 ## Exercise: navigate without guessing
 
-1. From the course root, enter `practice` and create a folder named `site_visit`.
-2. Enter `site_visit`. Predict what `pwd` will print, then run it.
-3. Navigate from there to `tutorials` using one relative path with `cd`.
-4. List its files, then return to the course root.
-5. Add a note to `practice/learning_log.md` explaining why `tutorials/cli.md` works from the course root but not from `practice/site_visit`.
+1. From the course root, enter `practice` and create a folder named `site_visit` (see [section 4](#4-create-and-enter-a-folder)).
+2. Enter `site_visit`. Predict what `pwd` will print, then run it (see [section 2](#2-look-before-you-move)).
+3. Navigate from there to `tutorials` using one relative path with `cd` (see [section 3](#3-understand-paths)).
+4. List its files, then return to the course root (see [section 2](#2-look-before-you-move)).
+5. Add a note to `practice/learning_log.md` explaining why `tutorials/03_cli.md` works from the course root but not from `practice/site_visit` (see [section 3](#3-understand-paths) and [editing Markdown, VS Code section 4](02_vscode.md#4-create-a-file-and-preview-it)).
 
 You are done when you can make the trip and explain the two parent-directory steps.
 

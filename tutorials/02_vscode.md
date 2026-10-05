@@ -1,6 +1,6 @@
-# 1. Open and edit files with VS Code
+# 2. Open and edit files with VS Code
 
-[Tutorial index](README.md) · Next: [The terminal and paths](cli.md)
+[Tutorial index](README.md) · Previous: [uv](01_uv.md) · Next: [The terminal and paths](03_cli.md)
 
 ## Cheatsheet
 
@@ -13,7 +13,7 @@
 | Open a notebook | Command Palette > **marimo: Open as marimo notebook** |
 | Create a notebook | Command Palette > **Create: New marimo notebook** |
 
-Allow about 20 to 30 minutes. Start with the repository you cloned using the [course README](../README.md#clone-the-course-repository).
+Allow about 20 to 30 minutes. Start with the repository you cloned using the [course README](../README.md#clone-the-course-repository). Complete [uv installation and course package setup, sections 1 and 2](01_uv.md#1-install-uv), before selecting a notebook environment below.
 
 By the end, you should be able to open the course root, create and save a text file, and preview Markdown.
 
@@ -24,7 +24,7 @@ Download [Visual Studio Code](https://code.visualstudio.com/download) for your o
 Open VS Code from your application menu. You may skip account sign-in, themes, and AI setup. They are not needed for these exercises.
 
 > [!NOTE]
-> VS Code edits files. Installing it does not install the course's Python environment. We will do that with [uv](uv.md).
+> VS Code edits files. Installing it does not install the course's Python environment. The previous [uv tutorial, section 2](01_uv.md#2-install-the-course-packages), prepares that environment.
 
 ## 2. Open the course folder
 
@@ -99,12 +99,17 @@ In **View > Extensions**, search for and install:
 - **Python**, published by **Microsoft**.
 - **marimo**, published by **marimo-team**. Check the [official extension page](https://marketplace.visualstudio.com/items?itemName=marimo-team.vscode-marimo) if several results look similar.
 
-Complete the [uv setup](uv.md) in your separate terminal application. After `uv sync` creates `.venv`, return to VS Code and open the Command Palette. Choose **Python: Select Interpreter** and select the course's `.venv`.
+Your [uv setup, section 2](01_uv.md#2-install-the-course-packages), should already have created `.venv`. If you skipped it, complete it in your separate terminal application before continuing. Open the Command Palette, choose **Python: Select Interpreter**, and select the course's `.venv`.
 
-If it is not listed, choose **Enter interpreter path** and browse to:
-
-- Windows: `.venv/Scripts/python.exe`
-- macOS/Linux: `.venv/bin/python`
+> [!TIP]
+> If the course `.venv` is missing from the interpreter list or notebook kernel picker after `uv sync`:
+>
+> 1. Open the Command Palette and choose **Python: Select Interpreter**.
+> 2. Choose **Enter interpreter path > Find…** and browse inside your cloned `GST.200UB` folder.
+> 3. Select `.venv\Scripts\python.exe` on Windows or `.venv/bin/python` on macOS/Linux. Select the Python executable, rather than the `.venv` folder itself.
+> 4. Reopen the marimo notebook and choose that environment in its kernel picker. If the list still has not refreshed, save your files, run **Developer: Reload Window** from the Command Palette, and reopen the notebook.
+>
+> If that executable does not exist, return to your separate terminal, enter the course root, and run `uv sync` again. Wait for it to finish successfully.
 
 This selects the program that runs Python. The [Python environment guide](https://code.visualstudio.com/docs/python/environments) explains how the editor discovers environments.
 
@@ -118,7 +123,7 @@ This selects the program that runs Python. The [Python environment guide](https:
 Use this existing project environment rather than creating a separate sandbox for each lab. You should see editable cells and their outputs inside VS Code. For a new notebook, use **Create: New marimo notebook**, save it with a `.py` extension, and choose the same environment.
 
 > [!TIP]
-> Keep PowerShell or Terminal open beside VS Code for `git pull` and `uv sync`. Notebook cells run inside VS Code through the marimo extension. The [marimo tutorial](marimo.md) walks through the first notebook.
+> Keep PowerShell or Terminal open beside VS Code for `git pull` and `uv sync`. Notebook cells run inside VS Code through the marimo extension. The [marimo tutorial](05_marimo.md) walks through the first notebook.
 
 ## If something looks wrong
 
@@ -129,6 +134,7 @@ Use this existing project environment rather than creating a separate sandbox fo
 | The file is named `learning_log.md.txt` | Rename it to `learning_log.md` in Explorer |
 | The preview shows old text | Save and check that the preview belongs to the file you edited |
 | The marimo command is missing | Check that the marimo extension is installed and enabled; reload VS Code |
+| `.venv` is missing from the kernel picker | Follow the interpreter-path steps in section 5 |
 | A notebook cannot import a package | Run `uv sync`, select the course `.venv` as its kernel, then restart that kernel |
 
 ## Documentation and a video
@@ -138,11 +144,11 @@ Use this existing project environment rather than creating a separate sandbox fo
 
 ## Exercise: leave yourself a useful note
 
-1. Add a `## What I can do now` heading to `practice/learning_log.md`.
-2. Under it, write two bullet points describing actions you actually performed.
-3. Add a Markdown link to the [course README](../README.md). Work out the relative path from your file in `practice`.
-4. Save, preview, close the file tab, and reopen it from Explorer.
-5. Reflect in one sentence: what is the difference between closing a tab and deleting a file?
+1. Add a `## What I can do now` heading to `practice/learning_log.md` (see [section 4](#4-create-a-file-and-preview-it)).
+2. Under it, write two bullet points describing actions you actually performed (see [Markdown notation in section 4](#markdown-notation-to-keep-handy)).
+3. Add a Markdown link to the [course README](../README.md). Work out the relative path from your file in `practice` (see [section 4](#markdown-notation-to-keep-handy) and [paths, CLI section 3](03_cli.md#3-understand-paths)).
+4. Save, preview, close the file tab, and reopen it from Explorer (see [section 2](#2-open-the-course-folder) and [section 4](#4-create-a-file-and-preview-it)).
+5. Reflect in one sentence: what is the difference between closing a tab and deleting a file (see [section 2](#2-open-the-course-folder))?
 
 You are done when the reopened file contains your changes and the preview displays a working link.
 

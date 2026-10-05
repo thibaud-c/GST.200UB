@@ -1,6 +1,6 @@
-# 3. Receive class updates and save your work with Git
+# 4. Receive class updates and save your work with Git
 
-[Tutorial index](README.md) · Previous: [Terminal and paths](cli.md) · Next: [uv](uv.md)
+[Tutorial index](README.md) · Previous: [Terminal and paths](03_cli.md) · Next: [marimo](05_marimo.md)
 
 ## Cheatsheet
 
@@ -17,7 +17,7 @@ Run commands in your class directory clone, using a separate PowerShell or Termi
 | `git log --oneline -5` | View the five most recent commits |
 | `git merge --abort` | Cancel an unfinished merge and return to the pre-merge state |
 
-Replace the lab filename with the file you actually edited. Save and commit your work before pulling. This makes it easier to resolve or abort a merge without losing edits.
+Replace the lab filename with the file you actually edited. Save your files and commit edits to tracked files before pulling. This makes it easier to resolve or abort a merge without losing edits. Check section 4 for how to read `git status`, including local practice files.
 
 Allow about 40 to 60 minutes. GitHub is required for the course. You will use your course clone, then deliberately create a conflict in a separate practice repository.
 
@@ -61,6 +61,8 @@ These settings apply only to this clone. For email privacy, copy the exact no-re
 
 ## 3. Save your work before pulling
 
+Git already tracks the files delivered in your course clone, meaning it records their versions. A new file you create starts as untracked. `git add` starts tracking it; `git commit` records the selected version in local history.
+
 There are three different actions:
 
 | Action | Result |
@@ -70,6 +72,9 @@ There are three different actions:
 | Push | Uploads commits to a repository where you have write permission |
 
 You can make local commits in your course clone without permission to push to the instructor's repository. Receiving materials uses `git pull`; follow the lab's instructions for submitting your work.
+
+> [!IMPORTANT]
+> Do not run `git push` to the instructor's course repository. Your exercise commits stay on your computer; you do not need to push them to receive updates. Use GitHub issues or discussions to suggest course improvements. Push group work only to your group's separate repository, as explained in section 7.
 
 Suppose you edited `lab_01/exercise.py`. Save it in VS Code and shut down its notebook kernel before updating files. In the terminal:
 
@@ -86,19 +91,39 @@ git commit -m "Save my Lab 01 progress"
 > [!TIP]
 > Stage named files. Avoid `git add .` while learning, because it can include downloads, notebook caches, or unrelated changes. `git diff` does not display the contents of new, untracked files; inspect them in VS Code.
 
-If `git status` lists other edits you want to preserve, save and commit those named files too. The course's `.gitignore` hides local environments and notebook caches from the list of untracked files. Do not commit credentials or large downloaded datasets. A clean working tree is the simplest starting point for a pull.
+If `git status` lists other edits to tracked files, review and commit those named files too. The course's `.gitignore` hides local environments and notebook caches from the list of untracked files. Do not commit credentials or large downloaded datasets. A clean working tree is the simplest starting point for a pull.
 
 ## 4. Pull at the beginning of class
 
-After saving your work:
+Save your files and shut down open notebook kernels. From the course root, check your copy **before** pulling:
 
 ```sh
 git status
+```
+
+Read the message before choosing the next step:
+
+| `git status` shows | What to do before `git pull` |
+| --- | --- |
+| `nothing to commit, working tree clean` | You can pull |
+| `Changes not staged for commit`, such as `modified: lab_01/exercise.py` | Review with `git diff`, stage the named files, then commit your progress using section 3 |
+| `Changes to be committed` | Review with `git diff --staged`, then commit the selected changes |
+| `Untracked files`, such as `practice/` | These files are on disk but have not been added to Git; read the practice-file note below |
+| `Unmerged paths` or a merge still in progress | Finish or abort that merge using section 5 before pulling again |
+
+An “ahead by … commits” message can simply reflect your local exercise commits. It is not an instruction to push to the instructor's repository. `git status` describes your local copy; `git pull` contacts GitHub to check for new materials.
+
+> [!NOTE]
+> Files you create during the tutorials, such as `practice/learning_log.md` and `practice/duckdb_parks.py`, are your local practice work. You can leave them untracked and still pull if incoming files do not use the same paths. They remain on your computer, but Git has no saved history for them. To record a practice file locally, stage its exact filename and commit it as in section 3. You do not need to stage the entire `practice` folder. If Git says an incoming file would overwrite an untracked file, move your file to a backup folder outside the clone using VS Code or your file manager, then retry.
+
+Once your tracked edits are committed and no merge is unfinished:
+
+```sh
 git pull
 uv sync
 ```
 
-`git pull` fetches new commits from GitHub and merges them into your current branch. It can add new lab files, update instructions, and bring in solutions without replacing your entire folder. `uv sync` updates the Python environment if the package requirements changed.
+`git pull` fetches new commits from GitHub and merges them into your current branch. It can add new lab files, update instructions, and bring in solutions without replacing your entire folder. `uv sync` updates the Python environment if the package requirements changed. If uv is not installed yet, complete [uv sections 1 and 2](01_uv.md#1-install-uv) before running it.
 
 | Git reports | Meaning |
 | --- | --- |
@@ -110,7 +135,7 @@ uv sync
 
 A successful merge may open an editor for a commit message. Keep the proposed message, save, and close the editor. If the terminal opens Vim, press Escape, type `:wq`, then Enter. In Nano, press Ctrl+O, Enter, then Ctrl+X. To accept the proposed message without opening an editor on a future pull, use `git pull --no-edit`.
 
-Once the pull finishes successfully, reopen the notebook in VS Code. If an untracked file blocks an incoming file with the same name, move your local file to a clearly named backup using VS Code, then retry. Do not delete it to get past the message.
+Once the pull finishes successfully, reopen the notebook in VS Code.
 
 ## 5. Resolve a merge conflict
 
@@ -145,14 +170,17 @@ A conflict can happen when you and the instructor edit the same part of an exerc
    git status
    ```
 
-7. Stage each resolved file and finish the merge:
+7. Stage each resolved file with `git add`. Saving or accepting a version in VS Code does not tell Git that the conflict is resolved; staging does. Review the result, then finish the merge:
 
    ```sh
    git add lab_01/exercise.py
+   git status
    git diff --staged
    git commit -m "Merge class updates and keep my lab work"
    git status
    ```
+
+   After `git add`, that file should no longer appear under `Unmerged paths`. If another file still does, resolve and stage it before committing. Git may say **All conflicts fixed but you are still merging**; the commit completes the merge.
 
 8. Run `uv sync`, reopen the notebook in VS Code, and run its cells to check the result.
 
@@ -190,7 +218,7 @@ Keep your course clone for receiving materials. For each project, one member cre
 
 Use a separate folder for this controlled exercise, so the course history stays usable. A **branch** is a named line of development. Here two branches stand in for your work and an instructor update.
 
-1. In your terminal, run:
+1. In your terminal, create the separate practice repository and configure your identity (see [section 2](#2-clone-once-and-configure-your-copy) and [creating folders, CLI section 4](03_cli.md#4-create-and-enter-a-folder)):
 
    ```sh
    cd ~/university
@@ -203,7 +231,7 @@ Use a separate folder for this controlled exercise, so the course history stays 
 
    Replace the name and email. If that practice folder already contains work, choose a new name.
 
-2. Open this folder in a new VS Code window. Create `notes.md` containing `Minimum area: 1 hectare`. Save, then run:
+2. Open this folder in a new VS Code window. Create `notes.md` containing `Minimum area: 1 hectare`. Save and commit it, then create a branch with `git switch -c` (see [section 3](#3-save-your-work-before-pulling) and [creating a file, VS Code section 4](02_vscode.md#4-create-a-file-and-preview-it)):
 
    ```sh
    git add notes.md
@@ -211,7 +239,7 @@ Use a separate folder for this controlled exercise, so the course history stays 
    git switch -c instructor-update
    ```
 
-3. Change the line to `Minimum area: 2 hectares`, save, then run:
+3. Change the line to `Minimum area: 2 hectares`, save, and commit. `git switch main` then returns you to the original branch (see [section 3](#3-save-your-work-before-pulling)):
 
    ```sh
    git add notes.md
@@ -219,7 +247,7 @@ Use a separate folder for this controlled exercise, so the course history stays 
    git switch main
    ```
 
-4. The file returns to the original version. Change its line to `Minimum area: 0.5 hectares`, save, then run:
+4. The file returns to the original version. Change its line to `Minimum area: 0.5 hectares`, save, and commit. `git merge instructor-update` brings in the other branch (see [section 3](#3-save-your-work-before-pulling) and [section 5](#5-resolve-a-merge-conflict)):
 
    ```sh
    git add notes.md
@@ -227,9 +255,9 @@ Use a separate folder for this controlled exercise, so the course history stays 
    git merge instructor-update
    ```
 
-5. Expect a conflict in `notes.md`. Resolve it by keeping the required threshold of 2 hectares and adding a separate sentence recording your 0.5-hectare experiment.
-6. Save, run `git diff --check`, stage `notes.md`, and commit the resolution. Check `git status`.
-7. Explain why Git could not choose the threshold for you, and why committing before a class update helps you recover your work.
+5. Expect a conflict in `notes.md`. Resolve it by keeping the required threshold of 2 hectares and adding a separate sentence recording your 0.5-hectare experiment (see [section 5](#5-resolve-a-merge-conflict)).
+6. Save, run `git diff --check`, stage `notes.md`, and commit the resolution. Check `git status` (see [section 5, steps 6 and 7](#5-resolve-a-merge-conflict)).
+7. Explain why Git could not choose the threshold for you, and why committing before a class update helps you recover your work (see [section 3](#3-save-your-work-before-pulling) and [section 5](#5-resolve-a-merge-conflict)).
 
 You are done when there are no conflict markers, Git reports a clean working tree, and both pieces of information are in the file. Return to your course folder afterward.
 

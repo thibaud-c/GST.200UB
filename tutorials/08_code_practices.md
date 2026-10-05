@@ -1,6 +1,6 @@
 # 8. Write Python you can explain
 
-[Tutorial index](README.md) · Previous: [DuckDB](duckdb.md) · Next: [Visualization](visualization.md)
+[Tutorial index](README.md) · Previous: [DuckDB](07_duckdb.md) · Next: [Visualization](09_visualization.md)
 
 ## Cheatsheet
 
@@ -14,7 +14,7 @@
 | Explain a decision in a comment | `# Merge overlaps before measuring area.` |
 | Check an example you can calculate by hand | `assert hectares_to_m2(0.5) == 5000` |
 
-Allow 30 to 45 minutes. Use Python cells in `practice/readable_code.py`. The aim is code you can revisit next week, change, and trust for a stated purpose.
+Allow 30 to 45 minutes. Create `practice/readable_code.py` as a marimo notebook using [marimo section 2](05_marimo.md#2-open-or-create-a-notebook), then use Python cells for the examples. The aim is code you can revisit next week, change, and trust for a stated purpose.
 
 ## 1. Names are part of the explanation
 
@@ -162,12 +162,12 @@ For spatial work, check the CRS, units, feature count, missing values, and geome
 
 ## Exercise: remove the clutter
 
-In a new cell, write `total_area_m2(areas_ha)`. It should take a list of areas in hectares and return their total in square metres.
+In a new cell, write `total_area_m2(areas_ha)`. It should take a list of areas in hectares and return their total in square metres (see [functions, Python section 5](06_python.md#5-name-a-calculation-with-a-function)).
 
-1. Use clear names and a short docstring that states the units.
-2. Check `[0.5, 1.0, 2.0]` and an empty list. Predict both answers before running.
-3. Explain why a separate function for every arithmetic operator would make this harder to read.
-4. Ask a partner to describe your function without running it. Revise anything they misread.
+1. Use clear names and a short docstring that states the units (see [section 1](#1-names-are-part-of-the-explanation)).
+2. Check `[0.5, 1.0, 2.0]` and an empty list. Predict both answers before running (see [section 5](#5-check-before-you-trust)).
+3. Explain why a separate function for every arithmetic operator would make this harder to read (see [KISS and YAGNI in section 3](#3-four-principles-worth-using)).
+4. Ask a partner to describe your function without running it. Revise anything they misread (see [section 1](#1-names-are-part-of-the-explanation) and [section 2](#2-keep-lines-and-functions-readable)).
 
 <details>
 <summary>Check your results</summary>

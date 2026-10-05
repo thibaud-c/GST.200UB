@@ -1,6 +1,6 @@
 # 7. Query tables and remote data with DuckDB
 
-[Tutorial index](README.md) · Previous: [Python](python.md) · Next: [Code practices](code_practices.md)
+[Tutorial index](README.md) · Previous: [Python](06_python.md) · Next: [Code practices](08_code_practices.md)
 
 ## What is DuckDB?
 
@@ -32,11 +32,11 @@ Write queries in **SQL cells** inside marimo. Give each result a different outpu
 | `read_parquet('https://.../file.parquet')` | Read remote Parquet |
 | `LIMIT 20` | Return at most 20 rows |
 
-Allow 60 to 90 minutes. Use the course environment prepared with `uv sync`. It includes marimo's SQL support. You will query park records, try a tiny remote Parquet file, then query Overture buildings.
+Allow 60 to 90 minutes. Use the course environment prepared in [uv section 2](01_uv.md#2-install-the-course-packages). It includes marimo's SQL support. You will query park records, try a tiny remote Parquet file, then query Overture buildings.
 
 ## 1. Create the data
 
-In VS Code, create `practice/data/parks.csv`:
+In VS Code, create `practice/data/parks.csv`, using the file-creation steps in [VS Code section 4](02_vscode.md#4-create-a-file-and-preview-it):
 
 ```csv
 park_id,name,district,area_ha,public_access
@@ -50,9 +50,21 @@ park_id,name,district,area_ha,public_access
 
 Save it. Each row describes a park; each column holds an attribute. CSV means comma-separated values. The first row names the columns. Use decimal points and no thousands separators.
 
-Create a marimo notebook called `practice/duckdb_parks.py` through the VS Code Command Palette. Select the course `.venv` kernel. The examples assume its working folder is `practice`, so the CSV path is `data/parks.csv`. See [how to check relative paths](cli.md#relative-paths-in-a-notebook).
+Create a marimo notebook called `practice/duckdb_parks.py` through the VS Code Command Palette, as in [marimo section 2](05_marimo.md#2-open-or-create-a-notebook). Select the course `.venv` kernel. The examples assume its working folder is `practice`, so the CSV path is `data/parks.csv`. See [how to check relative paths, CLI section 3](03_cli.md#relative-paths-in-a-notebook).
+
+If `.venv` is missing from the kernel picker after `uv sync`, follow [the VS Code interpreter-path fallback, section 5](02_vscode.md#5-install-python-and-marimo-support).
 
 ## 2. Create and run a SQL cell
+
+Before adding SQL examples, enter this in a **Python setup cell** and run it:
+
+```python
+import marimo as mo
+```
+
+If the notebook already contains this import in a Python cell, run that cell instead. Keep only one cell defining `mo`.
+
+Before running the first SQL cell, open marimo's settings in the top right of the notebook. Set **SQL output type** to `pandas`. This makes query results pandas **DataFrames**, tables with rows and columns. Keep this setting for the whole lesson and rerun existing SQL cells if you change it. See [marimo's SQL output settings](https://docs.marimo.io/guides/working_with_data/sql/#sql-output-types).
 
 SQL expresses questions about tables. DuckDB executes them, and marimo displays the results.
 
@@ -67,6 +79,9 @@ SELECT * FROM read_csv('data/parks.csv');
 
 Expect six rows and five columns. `FROM` identifies the input, `SELECT *` requests all columns, and the semicolon ends the statement. `read_csv` detects the column types. Paths and text values use single quotes.
 
+> [!IMPORTANT]
+> Give every SQL cell in this lesson its own output variable name. The first cell owns `parks`; later cells can read `FROM parks`, but must use another output name, such as `large_parks` or `parks_count`. If marimo reports **This cell redefines variables**, change the new cell's output-variable field. To change the original `parks` query, edit its existing cell. This rule also applies to shared names defined in Python cells.
+
 > [!TIP]
 > If your VS Code extension has no SQL cell option, update it. You can also use marimo's browser editor for this lesson: from the separate terminal, enter `practice` and run `uv run marimo edit duckdb_parks.py`. Its SQL cells use the same saved notebook. Avoid editing the file in two editors at once.
 
@@ -76,6 +91,7 @@ marimo saves a SQL cell as Python resembling this:
 
 ```python
 parks = mo.sql("SELECT * FROM read_csv('data/parks.csv');")
+# This is why we imported marimo as mo before
 ```
 
 This is an explanation of the saved file, **not another cell to add**. Adding it again would define `parks` twice. The editor writes this wrapper for you. All query examples below belong in SQL cells.
@@ -83,7 +99,7 @@ This is an explanation of the saved file, **not another cell to add**. Adding it
 > [!NOTE]
 > DuckDB runs inside the notebook's Python process. The default database is in memory, so there is no database server or password to configure. A named query result can be used by later cells. Restarting the kernel clears these results; rerun the notebook to recreate them. Saving the notebook saves code, not a permanent database or a copy of its input files.
 
-Use the default result type, **auto**, for this lesson, or choose **Polars**. This materialises each small result as a table in memory. It matters for the remote examples: subsequent summaries can then use the downloaded sample without querying the remote file again.
+With the `pandas` output setting, each small query result is a DataFrame in memory. Later summaries can use that downloaded sample without querying the remote file again. In a Python cell, try `parks.head()` to inspect its first rows. `df` is a common name for a DataFrame; here `parks` names the particular table. A GeoPandas GeoDataFrame, often named `gdf`, adds a geometry column and a coordinate system. These SQL results are ordinary DataFrames.
 
 ## 3. Select, filter, and sort
 
@@ -149,7 +165,7 @@ Check the North total by hand. These summaries include parks without public acce
 
 ## 5. Connect a Python slider to SQL
 
-Keep one `import marimo as mo` in a Python cell. Add another **Python cell**:
+Use the `mo` imported in your setup cell. Add another **Python cell**:
 
 ```python
 min_area = mo.ui.slider(0.0, 3.0, step=0.5, value=1.0,
@@ -214,7 +230,7 @@ FROM read_json_auto('https://stac.overturemaps.org/catalog.json');
 In a **Python cell**, build a path using that result:
 
 ```python
-overture_release = release_catalog["latest"][0]
+overture_release = release_catalog["latest"].iloc[0]
 buildings_path = (
     "s3://overturemaps-us-west-2/release/"
     f"{overture_release}/theme=buildings/type=building/*"
@@ -222,7 +238,7 @@ buildings_path = (
 overture_release
 ```
 
-The table has one row, so `[0]` reads its first value. The `*` selects the building files in the release. This avoids a hard-coded release date and a particular file identifier.
+`release_catalog["latest"]` selects the pandas column, and `.iloc[0]` reads its first value by position. The `*` selects the building files in the release. This avoids a hard-coded release date and a particular file identifier.
 
 > [!TIP]
 > Record the displayed release in your notes. For a repeatable comparison, replace the catalog lookup in the Python assignment with that recorded release string. "Latest" can change between two runs. A new schema may still require changing the query; finding the release automatically does not guarantee schema compatibility.
@@ -249,8 +265,13 @@ The rectangle runs from longitude 15.435 to 15.445 and latitude 47.070 to 47.076
 
 `names.primary` reads a nested name field. `hive_partitioning` recognises folder labels such as `theme=buildings`. Expect at most 20 rows; names and heights may be missing. Height is in metres when supplied. There is no row ordering, so the sample can vary.
 
+> [!NOTE]
+> `None` in Python, or `NULL` in a SQL table, means an attribute is missing. Many buildings have no recorded name or height; even a sample with every height missing is normal. It does not mean the query failed. A missing height is unknown, so do not replace it with zero. Use `COUNT(height)` to count supplied heights and `height IS NULL` to find missing ones.
+
 > [!WARNING]
-> This wildcard query can take several minutes because DuckDB inspects metadata across the release. Run it manually, keep the spatial filter, and avoid repeated requests from a slider. Interrupt it if necessary. Completing the small Parquet example is enough to practise remote SQL while a large query waits.
+> Allow tens of seconds to several minutes for this wildcard query: DuckDB inspects metadata across the release before returning the small sample.
+>
+> If you see `RuntimeError: Query interrupted`, wait until the previous run has stopped, then rerun the same query cell. If you restarted the kernel, rerun the setup, release lookup, path, and region-setting cells first. If interruptions continue, keep the error message and ask for help. You can practise remote SQL with the small Parquet example while troubleshooting.
 
 For larger work, follow the catalog's links to the building collection and inspect item footprints to select files overlapping your area. Use their asset URLs instead of guessing file identifiers. The [Overture DuckDB guide](https://docs.overturemaps.org/getting-data/duckdb/) explains the full-release pattern; the [catalog guide](https://docs.overturemaps.org/getting-data/) explains discovery. Check [attribution](https://docs.overturemaps.org/attribution/) when sharing Overture data.
 
@@ -259,28 +280,33 @@ For larger work, follow the catalog's links to the building collection and inspe
 | Symptom | First check |
 | --- | --- |
 | CSV not found | Check `Path.cwd()` and the relative path |
+| `NameError: name 'mo' is not defined` | Run the Python setup cell containing `import marimo as mo` from section 2 |
+| A SQL result does not support pandas methods | Set the SQL output type to `pandas` and rerun its cell, as in section 2 |
 | `parks` is missing | Name the first result `parks` and run its cell |
 | A result cannot be reused | Remove the leading underscore from its output name |
-| A name is defined twice | Give each output a unique name; do not add the Python wrapper example |
+| `This cell redefines variables` | Rename the new cell's output, such as `parks_count`; keep `parks` defined only in its original cell |
 | A CSV edit is not reflected | Save the CSV and rerun its reading cell |
 | Remote access fails | Check internet access and the URL; allow the extension installation to complete |
 | S3 path fails | Rerun the region setting and inspect `buildings_path` and the catalog |
+| `RuntimeError: Query interrupted` | Let the previous run stop, then rerun the cell; see section 8 |
+| Names or heights show `None` / `NULL` | These are missing attributes; see section 8 |
 | Overture field missing | Check the selected release's schema |
 
 ## Documentation and a video
 
 - [marimo SQL cells](https://docs.marimo.io/guides/working_with_data/sql/) and [SQL/Python video](https://www.youtube.com/watch?v=IHEf5HwU7R0).
+- [pandas introduction](https://pandas.pydata.org/docs/getting_started/intro_tutorials/index.html): inspecting and selecting rows in DataFrames.
 - [DuckDB CSV](https://duckdb.org/docs/current/data/csv/overview), [SELECT](https://duckdb.org/docs/current/sql/query_syntax/select), and [aggregates](https://duckdb.org/docs/current/sql/functions/aggregates).
 - [DuckDB remote Parquet](https://duckdb.org/docs/current/core_extensions/httpfs/https) and [Apache's test datasets](https://github.com/apache/parquet-testing).
 - [STAC introduction](https://stacspec.org/en/about/stac-spec/) and [Overture building schema](https://docs.overturemaps.org/schema/reference/buildings/building/).
 
 ## Exercise: predict, query, explain
 
-1. In SQL cells, count publicly accessible parks of at least `1.0` hectare and total their area.
-2. Predict the result at `0.5`, then run it.
-3. Add `7,Canal Pocket,South,0.4,true` to the CSV. Save and rerun its reading cell. Does either filtered summary change? What happens to the South total?
-4. Query `remote_example` to check its row count. Explain what changed when the input moved from a local CSV to remote Parquet.
-5. If you completed Overture, change the limit to `10`. In a new SQL cell, compare `COUNT(*)` with `COUNT(height)` from the materialised `graz_buildings` result. Explain why these are sample counts, not totals for Graz. Record the release.
+1. In SQL cells, count publicly accessible parks of at least `1.0` hectare and total their area. Give each result a unique output name (see [section 2](#2-create-and-run-a-sql-cell), [section 3](#3-select-filter-and-sort), and [section 4](#4-group-and-summarise)).
+2. Predict the result at `0.5`, then run it (see [section 3](#3-select-filter-and-sort)).
+3. Add `7,Canal Pocket,South,0.4,true` to the CSV. Save and rerun its reading cell. Does either filtered summary change? What happens to the South total (see [section 1](#1-create-the-data) and [section 4](#4-group-and-summarise))?
+4. Query `remote_example` to check its row count. Explain what changed when the input moved from a local CSV to remote Parquet (see [section 4](#4-group-and-summarise) and [section 6](#6-try-a-tiny-remote-parquet-file)).
+5. If you completed Overture, change the limit to `10`. In a new SQL cell, compare `COUNT(*)` with `COUNT(height)` from the `graz_buildings` DataFrame. Explain why these are sample counts, not totals for Graz. Record the release (see [section 4](#4-group-and-summarise), [section 7](#7-find-overture-releases-through-stac), and [section 8](#8-query-a-small-area-of-graz)).
 
 <details>
 <summary>Check your results</summary>

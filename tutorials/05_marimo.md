@@ -1,6 +1,6 @@
 # 5. Use marimo notebooks in VS Code
 
-[Tutorial index](README.md) · Previous: [uv](uv.md) · Next: [Python](python.md)
+[Tutorial index](README.md) · Previous: [Git](04_git.md) · Next: [Python](06_python.md)
 
 ## Cheatsheet
 
@@ -14,7 +14,7 @@
 | Restart execution | **marimo: Restart notebook kernel** |
 | Inspect a value | Put it on the last line of a cell |
 
-Allow about 30 to 45 minutes. Complete the [VS Code extension setup](vscode.md#5-install-python-and-marimo-support) and run `uv sync` in your separate terminal first. You will edit and run the notebook inside VS Code. The Python examples are small; the next tutorial explains the language in more detail.
+Allow about 30 to 45 minutes. Complete [uv section 2](01_uv.md#2-install-the-course-packages) and the [VS Code extension setup, section 5](02_vscode.md#5-install-python-and-marimo-support) first. You will edit and run the notebook inside VS Code. The Python examples are small; the next tutorial explains the language in more detail.
 
 ## 1. What is a notebook?
 
@@ -124,9 +124,9 @@ Before `git pull`, save and use **marimo: Shut Down Kernel**, available in the n
 
 ## 7. Use relative paths and SQL cells
 
-Use a relative path such as `data/parks.csv` for a file inside the notebook's working folder. Check that folder with `Path.cwd()` if a file cannot be found. The [CLI tutorial](cli.md#relative-paths-in-a-notebook) explains why the terminal and notebook can start in different places.
+Use a relative path such as `data/parks.csv` for a file inside the notebook's working folder. Check that folder with `Path.cwd()` if a file cannot be found. The [CLI tutorial](03_cli.md#relative-paths-in-a-notebook) explains why the terminal and notebook can start in different places.
 
-marimo also has SQL cells. Choose **SQL** in the cell-language selector or add-cell menu, then enter a query directly. The [DuckDB tutorial](duckdb.md) shows how to name results and reuse them in later cells. SQL cells are saved as Python in the `.py` file; the editor handles that translation.
+marimo also has SQL cells. Choose **SQL** in the cell-language selector or add-cell menu, then enter a query directly. The [DuckDB tutorial](07_duckdb.md) shows how to name results and reuse them in later cells. SQL cells are saved as Python in the `.py` file; the editor handles that translation.
 
 ## If the notebook behaves unexpectedly
 
@@ -151,12 +151,12 @@ The [multiple-definitions guide](https://docs.marimo.io/guides/understanding_err
 
 Continue in `practice/first_notebook.py`:
 
-1. Create a slider called `plot_size` for plot sizes from `100` to `1000` square metres, in steps of `100`, starting at `500`.
-2. In another cell, calculate `plot_count = int(slider_area_m2 // plot_size.value)`.
-3. Display a sentence containing the selected area, plot size, and whole number of plots.
-4. Test an area of `1.0` hectare with a plot size of `500`, then `600` square metres.
-5. Add a Markdown explanation of what this estimate ignores about real parks.
-6. Save and reopen the notebook to check that it runs from its code.
+1. Create a slider called `plot_size` for plot sizes from `100` to `1000` square metres, in steps of `100`, starting at `500` (see [section 5](#5-add-a-slider)).
+2. In another cell, calculate `plot_count = int(slider_area_m2 // plot_size.value)` (see [section 3](#3-run-two-python-cells) and [section 5](#5-add-a-slider)).
+3. Display a sentence containing the selected area, plot size, and whole number of plots (see [section 4](#4-add-an-explanation)).
+4. Test an area of `1.0` hectare with a plot size of `500`, then `600` square metres (see [section 5](#5-add-a-slider)).
+5. Add a Markdown explanation of what this estimate ignores about real parks (see [section 4](#4-add-an-explanation)).
+6. Save and reopen the notebook to check that it runs from its code (see [section 6](#6-save-and-restart)).
 
 `//` divides and rounds down to a whole quotient. `int` converts the result to an integer. Keeping the minimum plot size above zero avoids division by zero.
 

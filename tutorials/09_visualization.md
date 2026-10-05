@@ -1,6 +1,6 @@
 # 9. Explore charts and maps
 
-[Tutorial index](README.md) · Previous: [Code practices](code_practices.md)
+[Tutorial index](README.md) · Previous: [Code practices](08_code_practices.md)
 
 ## Cheatsheet
 
@@ -14,7 +14,7 @@
 | `map_view` | Display the Kepler widget inside marimo (print the map object) |
 | `points.to_crs(4326)` | Prepare longitude/latitude for a web map |
 
-Allow 30 to 45 minutes. Run `uv sync` in the course folder, then create `practice/visualization.py` in VS Code with the course kernel. Keep imports in one Python cell and each example in its own cell.
+Allow 30 to 45 minutes. Prepare the environment using [uv section 2](01_uv.md#2-install-the-course-packages), then create `practice/visualization.py` as a marimo notebook with the course kernel using [marimo section 2](05_marimo.md#2-open-or-create-a-notebook). Keep imports in one Python cell and each example in its own cell.
 
 ## 1. Choose a view for the question
 
@@ -126,11 +126,11 @@ A basemap and a polished legend do not validate a method. Ask what is absent fro
 
 ## Exercise: make the view answer a question
 
-1. Add a fourth park to `park_data`. Keep the names and values the same length. Predict which bar will be tallest.
-2. Make a chart that clearly states its measure and unit. Explain why a bar chart fits this comparison.
-3. Add a third point to `map_points`. Predict where it will appear before running.
-4. In Kepler, inspect all three names and toggle the layer off and on. Explain why changing point size does not change the distance between points.
-5. Identify one misleading styling choice you could make in either view, and fix it.
+1. Add a fourth park to `park_data`. Keep the names and values the same length. Predict which bar will be tallest (see [section 2](#2-start-with-plotly)).
+2. Make a chart that clearly states its measure and unit. Explain why a bar chart fits this comparison (see [section 1](#1-choose-a-view-for-the-question) and [section 2](#2-start-with-plotly)).
+3. Add a third point to `map_points`. Predict where it will appear before running (see [section 3](#3-prepare-a-geographic-table)).
+4. In Kepler, inspect all three names and toggle the layer off and on. Explain why changing point size does not change the distance between points (see [section 4](#4-display-keplergl-inside-marimo)).
+5. Identify one misleading styling choice you could make in either view, and fix it (see [section 2](#2-start-with-plotly) and [section 5](#5-read-the-map-critically)).
 
 <details>
 <summary>Check your work</summary>
