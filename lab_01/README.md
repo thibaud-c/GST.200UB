@@ -20,7 +20,7 @@ the approach chosen for this exercise so you can compare it with your proposal.
 ## Start here
 
 If course updates are available, save your work, run `git pull`, then `uv sync`
-in a separate terminal in the course folder. See the [Git tutorial](../tutorials/git.md)
+in a separate terminal in the course folder. See the [Git tutorial](../tutorials/04_git.md)
 if you need help.
 
 Open [exercise.py](exercise.py) in VS Code and choose **marimo: Open as marimo

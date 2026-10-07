@@ -45,7 +45,7 @@ def _(mo):
 
     If there are course updates, save your work and run `git pull`, then `uv sync`,
     in a separate terminal in the course folder. See the
-    [Git tutorial](https://github.com/thibaud-c/GST.200UB/blob/main/tutorials/git.md)
+    [Git tutorial](https://github.com/thibaud-c/GST.200UB/blob/main/tutorials/04_git.md)
     if you need help preserving edits or resolving conflicts.
     Open this file as a marimo notebook in VS Code and select the course `.venv`.
 
@@ -422,7 +422,7 @@ def _(mo):
 
     Documentation: [Leafmap Kepler](https://leafmap.org/notebooks/26_kepler_gl/),
     [GeoPandas mapping](https://geopandas.org/en/stable/docs/user_guide/mapping.html),
-    and the course [visualization tutorial](https://github.com/thibaud-c/GST.200UB/blob/main/tutorials/visualization.md).
+    and the course [visualization tutorial](https://github.com/thibaud-c/GST.200UB/blob/main/tutorials/09_visualization.md).
 
     # Part B. Your Graz analysis
 
@@ -763,7 +763,7 @@ def _(mo):
 
     - [OSMnx worked examples](https://github.com/gboeing/osmnx-examples)
     - [GeoPandas introduction](https://geopandas.org/en/stable/getting_started/introduction.html)
-    - [Code practices](https://github.com/thibaud-c/GST.200UB/blob/main/tutorials/code_practices.md)
+    - [Code practices](https://github.com/thibaud-c/GST.200UB/blob/main/tutorials/08_code_practices.md)
     - [OpenStreetMap attribution](https://www.openstreetmap.org/copyright)
     """)
     return
