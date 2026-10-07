@@ -37,12 +37,12 @@ The statements below are proposed starting points. Agree on concrete arrangement
 Work backward from the course deadlines. Allow time for review, corrections, and a complete rerun. 
 
 | Project part | Target date | Responsible member(s) |
-| :--- | :--- | :--- | :--- |
-| Code and analysis | Completed code development and analysis | [YYYY-MM-DD] | [Name(s)] |
-| Draft the report | Draft report and reproduction instructions | [YYYY-MM-DD] | [Name(s)] |
-| Review and rerun | Review comments resolved; complete analysis rerun by another member | [YYYY-MM-DD] | [Name(s)] |
-| Prepare the presentation | Slides, rehearsal, and shared understanding of likely questions | [YYYY-MM-DD] | [Name(s)] |
-| Submit | Final files checked against the assignment brief | [YYYY-MM-DD] | [Name(s)] |
+| :--- | :--- | :--- | 
+| Code and analysis | [YYYY-MM-DD] | [Name(s)] |
+| Draft the report | [YYYY-MM-DD] | [Name(s)] |
+| Review and rerun | [YYYY-MM-DD] | [Name(s)] |
+| Prepare the presentation | [YYYY-MM-DD] | [Name(s)] |
+| Submit | [YYYY-MM-DD] | [Name(s)] |
 
 ## 4. What We Bring and What We Want to Learn/Improve
 
