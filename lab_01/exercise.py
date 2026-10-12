@@ -59,7 +59,9 @@ def _(mo):
     | Operation | Use | Documentation |
     | --- | --- | --- |
     | `ox.geocode_to_gdf(place)` | Find a place boundary | [OSMnx geocoder](https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.geocoder.geocode_to_gdf) |
-    | `ox.features_from_polygon(polygon, tags)` | Query OSM features | [OSMnx features](https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.features.features_from_polygon) |
+    | `ox.features_from_point(point, tags, dist)` | Query around a latitude/longitude point | [Point query](https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.features.features_from_point) |
+    | `ox.features_from_place(place, tags)` | Query within a named place's boundary | [Place query](https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.features.features_from_place) |
+    | `ox.features_from_bbox(bbox, tags)` | Query an explicit bounding rectangle | [Bounding-box query](https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.features.features_from_bbox) |
     | `data.head()`, `data.columns` | Explore a table | [GeoPandas introduction](https://geopandas.org/en/stable/getting_started/introduction.html) |
     | `data.crs`, `data.to_crs(32633)` | Inspect or transform the CRS | [Projection](https://geopandas.org/en/stable/docs/user_guide/projections.html) |
     | `data.geometry.representative_point()` | One interior point per feature | [Geometry operations](https://geopandas.org/en/stable/docs/user_guide/geometric_manipulations.html) |
@@ -89,15 +91,24 @@ def _(mo):
 
     ## A1. Query OpenStreetMap with OSMnx
 
+    Use this section for [Part B, Task 1](#task-1-query-graz-and-its-supermarkets-with-osmnx):
+    `get_city` and `get_supermarkets`.
+
     You have used tags in Overpass Turbo. OSMnx lets Python send similar feature
     requests and returns a GeoDataFrame: a table with geometry and a CRS.
     A tag is a key and value, such as `amenity=cafe`. A Python dictionary writes
     that pair as `{"amenity": "cafe"}`. You can read more about osm tags: [here](https://wiki.openstreetmap.org/wiki/Tags).
 
-    Run these cells. The first gets Salzburg's boundary as a worked example. The second asks for cafés
-    in a small box in Graz. In Task 1 you will query Graz’s city boundary yourself.
-    These are live service requests;
-    allow them to finish before running again. OSMnx caches responses locally.
+    The first cell gets Salzburg's boundary as a worked example. The next cell
+    runs three café queries in Graz using the same tag. Before running it,
+    predict which query covers the largest area and which might return more cafés.
+    In [Task 1](#task-1-query-graz-and-its-supermarkets-with-osmnx), you will query
+    Graz's city boundary and its supermarkets using the place name.
+
+    > [!NOTE]
+    > The comparison cell makes three live feature requests. The city-wide
+    > query can take longer than the small-area queries. Run the cell once and
+    > wait for it to finish. OSMnx caches responses locally.
     """)
     return
 
@@ -112,24 +123,64 @@ def _(ox):
 
 
 @app.cell
-def _(ox):
-    cafes = ox.features_from_point(
-        (47.070, 15.440), tags={"amenity": "cafe"}, dist=300
+def _(ox, pd):
+    cafe_tags = {"amenity": "cafe"}
+    cafes_point = ox.features_from_point(
+        (47.070, 15.440), tags=cafe_tags, dist=300
     )
-    cafes.head()
-    return (cafes,)
+    cafes_place = ox.features_from_place("Graz, Austria", tags=cafe_tags)
+    cafes_bbox = ox.features_from_bbox(
+        (15.436, 47.068, 15.444, 47.073), tags=cafe_tags
+    )
+    pd.DataFrame({
+        "query": ["from_point", "from_place", "from_bbox"],
+        "features": [len(cafes_point), len(cafes_place), len(cafes_bbox)],
+    })
+    return (cafes_point,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    The centre uses **latitude, longitude**, as specified by OSMnx.
-    `dist=300` sets the search box size in metres. It is not a 300-metre walking route.
-    For a city-wide question, `features_from_polygon` takes a boundary geometry
-    in EPSG:4326 instead of a centre point.
+    ### Reflect before reading the explanation
 
-    Run the exploration cell below. Try `cafes.columns.tolist()` and inspect
-    `cafes[["name", "geometry"]].head()` too. Which details are missing? What
+    - For `features_from_point`, what do you think `dist=300` controls? Predict
+      how changing it to 600 would affect the search area. Would the café count
+      necessarily double?
+    - For `features_from_place`, why might querying all of Graz return a different
+      count from querying around one coordinate? Which area fits our city-wide exercise?
+    - For `features_from_bbox`, what would happen if you moved one edge of the
+      rectangle? Do the point and bounding-box examples necessarily query identical areas?
+
+    Add a short Markdown answer. Then inspect `cafes_point.head()`,
+    `cafes_place.head()`, and `cafes_bbox.head()` in separate exploration cells.
+
+    ### What each query does
+
+    | Function | Input in this example | Search area |
+    | --- | --- | --- |
+    | `features_from_point` | `(47.070, 15.440)` and `dist=300` | A rectangle around the centre near Graz's old town |
+    | `features_from_place` | `"Graz, Austria"` | The boundary found for the named city |
+    | `features_from_bbox` | `(15.436, 47.068, 15.444, 47.073)` | The rectangle whose edges you supplied |
+
+    `features_from_point` uses `(latitude, longitude)`. `dist=300` extends the search
+    rectangle about 300 metres in each direction from the centre. It does not
+    create a circle or measure walking distance.
+
+    `features_from_place` looks up the name and uses its mapped boundary. It needs
+    a place with an area boundary. For Task 1, this gives a city-wide supermarket
+    query without passing a geometry between functions. `geocode_to_gdf` retrieves
+    the boundary itself; `features_from_place` retrieves the features inside it.
+
+    `features_from_bbox` uses `(west, south, east, north)`, or
+    `(minimum longitude, minimum latitude, maximum longitude, maximum latitude)`.
+    These numbers are degrees. In OSMnx 2.x, pass them as one tuple.
+
+    All three return GeoDataFrames. A larger count can reflect a larger search
+    area; it does not mean that one function finds more complete data.
+
+    Run the exploration cell below. Try `cafes_point.columns.tolist()` and inspect
+    `cafes_point[["name", "geometry"]].head()` too. Which details are missing? What
     would you check in Overpass Turbo or on the OSM map?
 
     OSMnx's feature index contains an element type and OSM ID. A node may be a
@@ -142,11 +193,11 @@ def _(mo):
 
 
 @app.cell
-def _(cafes):
-    print(cafes.crs)
-    print(cafes.geom_type.value_counts())
-    print(cafes.index.names)
-    cafes.isna().sum().sort_values(ascending=False).head()
+def _(cafes_point):
+    print(cafes_point.crs)
+    print(cafes_point.geom_type.value_counts())
+    print(cafes_point.index.names)
+    cafes_point.isna().sum().sort_values(ascending=False).head()
     return
 
 
@@ -154,6 +205,8 @@ def _(cafes):
 def _(mo):
     mo.md(r"""
     ## A2. Explore and prepare a small GeoDataFrame
+
+    Use this section for [Part B, Task 2](#task-2-prepare-billa-points): `prepare_billa`.
 
     This small table contains points, a footprint polygon, and one missing brand. The coordinates
     are already in metres in EPSG:32633, a suitable UTM CRS for Graz.
@@ -226,6 +279,8 @@ def _(mo):
 
     ## A3. Buffer, merge, and clip
 
+    Use this section for [Part B, Task 3](#task-3-build-cumulative-distance-zones): `make_zones`.
+
     A buffer contains locations within a given straight-line distance of a point.
     Merge overlaps before measuring area, then clip to the study boundary.
     Otherwise you can count an overlap twice or include area outside the city.
@@ -277,6 +332,10 @@ def _(mo):
     area if the two store points were identical?
 
     ## A4. Repeat for several distances
+
+    Use the buffer loop for [Part B, Task 3](#task-3-build-cumulative-distance-zones).
+    The ring and outside-area calculations below prepare you for
+    [Task 4](#task-4-estimate-the-average-distance).
 
     Each larger buffer includes the smaller ones. These are **cumulative** areas.
     They must be converted to non-overlapping bands before weighting distances.
@@ -336,6 +395,10 @@ def _(mo):
     mo.md(r"""
     ## A5. Calculate an area-weighted average
 
+    Use this section for [Part B, Task 4](#task-4-estimate-the-average-distance):
+    `estimate_mean_distance`, after calculating ring and outside areas as shown
+    in [A4](#a4-repeat-for-several-distances).
+
     Suppose 20% of an area's land lies within 100 m, another 30% lies between
     100 and 200 m, another 30% between 200 and 400 m, and 20% beyond 400 m.
     Use each closed band's midpoint, then choose a representative distance for
@@ -393,6 +456,9 @@ def _(mo):
     mo.md(r"""
     ## A6. Explore multiple layers in Kepler.gl
 
+    Use this section for [Part B, Task 5](#task-5-explore-billa-and-the-distance-zones-in-kepler):
+    your Graz Kepler map.
+
     The map displays directly in marimo. Use longitude/latitude for this web
     map, while keeping the metric tables for calculations. We use Leafmap’s Kepler
     backend: `add_gdf` adds a GeoDataFrame and printing the map object displays it.
@@ -428,17 +494,25 @@ def _(mo):
 
     ## Task 1. Query Graz and its supermarkets with OSMnx
 
-    First write `get_city(place)`. Use OSMnx to query the administrative boundary
+    (See [A1](#a1-query-openstreetmap-with-osmnx): OSMnx queries,
+    `ox.geocode_to_gdf`, and `ox.features_from_place`.)
+
+    First write `get_city(place)`. Use `ox.geocode_to_gdf` to query the administrative boundary
     for the supplied place name. Return its GeoDataFrame in EPSG:4326, keeping
     its attributes. The check calls your function with `"Graz, Austria"`.
     Inspect the returned place name and geometry: did you get the city you intended?
-    Part A1 shows the same operation for a different city.
+    [A1](#a1-query-openstreetmap-with-osmnx) shows the same operation for a different city.
 
-    Then write `get_supermarkets(boundary)`. The input is a Shapely polygon in
-    EPSG:4326. Return all mapped supermarkets inside it as an OSMnx GeoDataFrame.
+    Then write `get_supermarkets(place)` using
+    `ox.features_from_place(place, tags=tags)`. The input is a place-name string,
+    such as `"Graz, Austria"`. Return all mapped supermarkets within that place
+    as an OSMnx GeoDataFrame in EPSG:4326. Use the same place name for both functions.
     Choose the tag key and value yourself, using your Overpass Turbo experience
     and [OSM's supermarket tag](https://wiki.openstreetmap.org/wiki/Tag:shop%3Dsupermarket).
     Keep the original attributes and OSM index. Do not filter by brand yet.
+
+    Use the [current OSMnx function reference](https://osmnx.readthedocs.io/en/stable/user-reference.html#osmnx.features.features_from_place)
+    when checking the arguments.
 
     The check cells call each function once. Explore the supermarket table:
     inspect its shape, columns, geometry types, brand counts, and missing brands.
@@ -480,15 +554,15 @@ def _(city, city_ok, mo):
 
 
 @app.function
-def get_supermarkets(boundary):
-    # Return a GeoDataFrame of OSM supermarkets in this EPSG:4326 polygon.
+def get_supermarkets(place):
+    # Use ox.features_from_place to return supermarkets for this place name.
     return None
 
 
 @app.cell(hide_code=True)
-def _(city, city_ok, gpd, mo):
+def _(city_ok, gpd, mo):
     mo.stop(not city_ok, mo.md("Complete the Graz boundary query before testing the supermarket query."))
-    supermarkets = get_supermarkets(city.geometry.iloc[0])
+    supermarkets = get_supermarkets("Graz, Austria")
     download_ok = False
     try:
         assert isinstance(supermarkets, gpd.GeoDataFrame), "Complete get_supermarkets: return a GeoDataFrame."
@@ -520,6 +594,10 @@ def _(mo):
     establish completeness.
 
     ## Task 2. Prepare BILLA points
+
+    (See [A2](#a2-explore-and-prepare-a-small-geodataframe):
+    `to_crs`, `representative_point`, `str.contains` with `na=False`,
+    and `.loc[mask].copy()`.)
 
     Write `prepare_billa(data)`. Project the downloaded GeoDataFrame to EPSG:32633,
     convert geometry to representative points, and keep brands containing `billa`,
@@ -564,10 +642,13 @@ def _(mo):
     mo.md(r"""
     ## Task 3. Build cumulative distance zones
 
+    (See [A3](#a3-buffer-merge-and-clip): `buffer`, `dissolve`, `gpd.clip`, and `geometry.area`;
+    [A4](#a4-repeat-for-several-distances): repeating the calculation for several distances.)
+
     Write `make_zones(points, boundary, distances)`. Both inputs use a metric CRS.
     Return one GeoDataFrame row per requested distance, in the supplied order,
     with columns `distance_m` and `geometry`. Merge overlaps and clip each zone
-    to the boundary. Part A4 shows the operations on the small example.
+    to the boundary. Measure areas in square metres using the metric CRS.
 
     Use `[250, 500, 1000, 2500]` metres for Graz. Inspect the areas at each distance.
     They should grow or stay the same and never exceed the city's area. Explain
@@ -622,6 +703,9 @@ def _(billa_zones, mo, zones_ok):
 def _(mo):
     mo.md(r"""
     ## Task 4. Estimate the average distance
+
+    (See [A4](#a4-repeat-for-several-distances): ring areas from cumulative areas and the outside area;
+    [A5](#a5-calculate-an-area-weighted-average): midpoint distances and the area-weighted average.)
 
     Write `estimate_mean_distance(cumulative_areas, city_area, midpoints, outside_distance)`.
     Return one number in metres. All areas use the same units. Inputs are ordered,
@@ -723,7 +807,10 @@ def _(mo):
 
     ## Task 5. Explore BILLA and the distance zones in Kepler
 
-    Follow Part A6. Use `leafmap.Map` and `add_gdf` to add the city, BILLA points, and the cumulative
+    (See [A6](#a6-explore-multiple-layers-in-keplergl):
+    `leafmap.Map`, `add_gdf`, and `.to_crs(4326)`.)
+
+    Use `leafmap.Map` and `add_gdf` to add the city, BILLA points, and the cumulative
     zones in EPSG:4326, then print the map object to display it directly.
     Start with `leafmap.Map(center=[47.07, 15.44], zoom=11, height=500)`.
     Label distances in metres and retain **© OpenStreetMap contributors**.
