@@ -18,7 +18,7 @@ Once you have a clone, follow this order if all the tools are new to you:
 | [4. Git and GitHub](04_git.md) | Save changes, pull class updates, and resolve conflicts | 40 to 60 min |
 | [5. marimo in VS Code](05_marimo.md) | Create cells, run a notebook, and use a slider | 30 to 45 min |
 | [6. Python in marimo](06_python.md) | Work with values, lists, conditions, and functions | 45 to 60 min |
-| [7. DuckDB in marimo](07_duckdb.md) | Query local tables and remote Parquet data in SQL cells | 60 to 90 min |
+| [7. DuckDB in marimo](07_duckdb.md) | Learn SQL, join tables, measure geometry, and query remote Parquet | 90 to 120 min |
 | [8. Readable Python and AI-generated code](08_code_practices.md) | Name, organise, explain, and check your code | 30 to 45 min |
 | [9. Visualization](09_visualization.md) | Make charts with Plotly and maps with Kepler.gl | 30 to 45 min |
 
