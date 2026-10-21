@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.25.1"
 app = marimo.App(width="medium")
 
 
@@ -115,8 +115,6 @@ def _(mo):
 
 @app.cell
 def _(ox):
-    ox.settings.use_cache = True
-    ox.settings.cache_folder = "data/osmnx_cache"
     example_boundary = ox.geocode_to_gdf("Salzburg, Austria")
     example_boundary[["display_name", "geometry"]]
     return
