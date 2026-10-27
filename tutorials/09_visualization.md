@@ -11,7 +11,8 @@
 | `figure` | Display a figure as the last expression |
 | `import leafmap.kepler as leafmap` | Load the interactive map |
 | `map_view.add_gdf(points, layer_name="Stores")` | Add a named geographic layer |
-| `map_view` | Display the Kepler widget inside marimo (print the map object) |
+| `map_view` | Display the Kepler widget inside marimo |
+| `map_view.to_html("file_name.html")` | Export an interactive HTML map if the widget does not render |
 | `points.to_crs(4326)` | Prepare longitude/latitude for a web map |
 
 Allow 30 to 45 minutes. Prepare the environment using [uv section 2](01_uv.md#2-install-the-course-packages), then create `practice/visualization.py` as a marimo notebook with the course kernel using [marimo section 2](05_marimo.md#2-open-or-create-a-notebook). Keep imports in one Python cell and each example in its own cell.
@@ -111,6 +112,36 @@ Open the layer controls, inspect the two points, and change their colour or radi
 
 Changing a style through the map controls may not preserve it when the notebook restarts. For this exercise, focus on inspecting the data and being able to explain your styling choices.
 
+### If Kepler does not render
+
+If the map is blank or its controls do not render correctly in marimo, export it
+from a new Python cell after creating `map_view`:
+
+```python
+map_view.to_html("file_name.html")
+```
+
+This saves an interactive HTML map in the notebook's working folder. See
+[relative paths](03_cli.md#relative-paths-in-a-notebook) if you cannot find it.
+The [Leafmap export documentation](https://leafmap.org/kepler/) describes `to_html`.
+
+Open the exported file with VS Code's Live Server extension:
+
+1. Open **Extensions** in VS Code with **Cmd+Shift+X** on macOS or
+   **Ctrl+Shift+X** on Windows/Linux.
+2. Search for **Live Server** by **Ritwick Dey** and click **Install**.
+   Use the [official Marketplace listing](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+   to identify the extension.
+3. In VS Code's **Explorer**, find `file_name.html`, right-click it, and select
+   **Open with Live Server**.
+4. Your browser opens the map at a local address such as
+   `http://127.0.0.1:5500/file_name.html`. Inspect the points and layer controls there.
+
+> [!TIP]
+> Rerun the export cell after changing the map. Live Server reloads the browser
+> when the HTML file changes. If **Open with Live Server** is missing, check that
+> the extension is installed and that you right-clicked the `.html` file.
+
 ## 5. Read the map critically
 
 Compare the map with its table. Check that every expected point is visible and that coordinates are in the correct order. A large symbol can hide nearby points. A filled buffer can hide the basemap. For distance bands, use a consistent light-to-dark sequence and label the distances in metres.
@@ -129,7 +160,7 @@ A basemap and a polished legend do not validate a method. Ask what is absent fro
 1. Add a fourth park to `park_data`. Keep the names and values the same length. Predict which bar will be tallest (see [section 2](#2-start-with-plotly)).
 2. Make a chart that clearly states its measure and unit. Explain why a bar chart fits this comparison (see [section 1](#1-choose-a-view-for-the-question) and [section 2](#2-start-with-plotly)).
 3. Add a third point to `map_points`. Predict where it will appear before running (see [section 3](#3-prepare-a-geographic-table)).
-4. In Kepler, inspect all three names and toggle the layer off and on. Explain why changing point size does not change the distance between points (see [section 4](#4-display-keplergl-inside-marimo)).
+4. In Kepler, inspect all three names and toggle the layer off and on. Explain why changing point size does not change the distance between points (see [section 4](#4-display-keplergl-inside-marimo); use the [HTML fallback](#if-kepler-does-not-render) if needed).
 5. Identify one misleading styling choice you could make in either view, and fix it (see [section 2](#2-start-with-plotly) and [section 5](#5-read-the-map-critically)).
 
 <details>
