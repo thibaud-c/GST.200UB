@@ -20,23 +20,7 @@ def _():
     from urllib.request import urlopen
     from datetime import datetime, timezone
 
-    return (
-        DBSCAN,
-        Path,
-        Polygon,
-        box,
-        datetime,
-        gpd,
-        h3,
-        leafmap,
-        mo,
-        pd,
-        plt,
-        px,
-        timezone,
-        urlencode,
-        urlopen,
-    )
+    return DBSCAN, Path, Polygon, box, gpd, h3, leafmap, mo, pd, plt, px
 
 
 @app.cell(hide_code=True)
@@ -720,68 +704,25 @@ def _(mo):
     mo.md(r"""
     # Part B. Reproduce the evaluation idea with Chicago data
 
-    ## B0. Know the source before downloading
+    Can hotspots built from January–November records locate December's recorded burglaries?
+    Work from your downloaded 2025 CSV and city boundary. Keep the same files throughout.
 
-    These are approximate police-recorded reports, not all crime or a measure of safety.
-    Read the [source metadata](https://data.cityofchicago.org/d/ijzp-q8t2); do not reconstruct addresses.
+    **Your route through Part B:** audit the records → prepare points → build two hotspot maps → evaluate December → explain the maps.
+    December is the held-out test period. Keep it out of model building and parameter choices.
 
-    Download all of **2025**, from 2025-01-01 inclusive to 2026-01-01 exclusive, into
-    `data/chicago_2025.csv`. Use January–November for training and predict December hotspots.
-    Evaluate the frozen hotspot maps against December's held-out records.
-
-    To download through the website, follow the [export steps](https://github.com/thibaud-c/GST.200UB/blob/main/lab_02/README.md#download-from-the-website).
-    You can also run the cell below to download the data.
-
-    [Notes: source limits, download window, and paths](https://github.com/thibaud-c/GST.200UB/blob/main/lab_02/notes.md#b0).
+    [Files and setup](https://github.com/thibaud-c/GST.200UB/blob/main/lab_02/README.md#part-b-data-and-workflow) · [Study notes](https://github.com/thibaud-c/GST.200UB/blob/main/lab_02/notes.md#b1).
     """)
     return
 
 
 @app.cell
-def _(Path, datetime, pd, timezone, urlencode, urlopen):
-    Path("data").mkdir(exist_ok=True)
-    _export_path = Path("data/chicago_2025_export.csv")
-    _crime_path = Path("data/chicago_2025.csv")
-    # Preserve a website export and create the analysis copy only when needed.
-    if _export_path.exists() and not _crime_path.exists():
-        _export = pd.read_csv(_export_path, dtype="string", encoding="utf-8-sig", nrows=250000)
-        assert len(_export) < 250000, "Filter the website export to Year = 2025; the download cap was reached."
-        # Website and API downloads can use different column labels and date formats.
-        _export.columns = _export.columns.str.strip().str.lower().str.replace(" ", "_", regex=False)
-        _columns = ["id", "date", "primary_type", "description", "district", "latitude", "longitude"]
-        assert set(_columns).issubset(_export.columns), "Export the original columns, including Date and Primary Type."
-        _export = _export.loc[:, _columns].copy()
-        _export["date"] = pd.to_datetime(_export["date"], format="mixed")
-        assert _export["date"].dt.year.eq(2025).all(), "Filter the website to Year = 2025 before exporting."
-        _export.to_csv(_crime_path, index=False)
-        _crime_path.with_suffix(".csv.source.txt").write_text(
-            "Source: https://data.cityofchicago.org/d/ijzp-q8t2\n"
-            f"Website export: {_export_path.name}; Year = 2025\n"
-            f"Imported UTC: {datetime.now(timezone.utc).isoformat()}\n"
-        )
-    _query = urlencode({
-        "$select": "id,date,primary_type,description,district,latitude,longitude",
-        "$where": "date >= '2025-01-01T00:00:00' AND date < '2026-01-01T00:00:00'",
-        "$order": "id",
-        "$limit": 250000,
-    })
-    _sources = {
-        "chicago_2025.csv": "https://data.cityofchicago.org/resource/ijzp-q8t2.csv?" + _query,
-        "chicago_boundary.geojson": "https://data.cityofchicago.org/api/geospatial/qqq8-j68g?method=export&format=GeoJSON",
-    }
-    # Reuse cached files so each comparison uses the same data snapshot.
-    for _name, _url in _sources.items():
-        _path = Path("data") / _name
-        if not _path.exists():
-            with urlopen(_url, timeout=120) as _response:
-                _contents = _response.read()
-            _path.write_bytes(_contents)
-            _path.with_suffix(_path.suffix + ".source.txt").write_text(
-                f"Source: {_url}\nRetrieved UTC: {datetime.now(timezone.utc).isoformat()}\n"
-            )
+def _(Path):
     csv_path = "data/chicago_2025.csv"
     boundary_path = "data/chicago_boundary.geojson"
-    print("Using cached files:", csv_path, boundary_path)
+    # Use the files you downloaded manually. These paths start in lab_02.
+    assert Path(csv_path).is_file(), "Place your 2025 CSV in lab_02/data/chicago_2025.csv."
+    assert Path(boundary_path).is_file(), "Place your city boundary in lab_02/data/chicago_boundary.geojson."
+    print("Using local files:", csv_path, boundary_path)
     return boundary_path, csv_path
 
 
@@ -791,13 +732,24 @@ def _(mo):
     ## B1. Audit the extract with DuckDB
 
     Inspect schema, date coverage, missing coordinates, and duplicate IDs before exclusions.
-    We read text and convert explicitly so bad values remain countable.
+    `read_csv` detects column types. `normalize_names=true` turns a header such as `Primary Type` into `primary_type`.
+    `TRY_CAST` returns `NULL` when a value cannot be converted, so we can count it.
     `source_audit` covers all 2025 and supplies Task 1's annual burglary count.
     `category_audit` covers January–November training records only.
 
     Review [A1](#a1-eda-begins-with-questions-about-the-records) and
     [A2](#a2-time-denominators-and-misleading-summaries) · [Notes: file audit](https://github.com/thibaud-c/GST.200UB/blob/main/lab_02/notes.md#b1).
     """)
+    return
+
+
+@app.cell
+def _(csv_path, mo):
+    source_columns = mo.sql(
+        f"""
+        DESCRIBE SELECT * FROM read_csv('{csv_path}', normalize_names=true)
+        """
+    )
     return
 
 
@@ -813,7 +765,7 @@ def _(csv_path, mo):
                COUNT(*) - COUNT(TRY_CAST(date AS TIMESTAMP)) AS bad_dates,
                COUNT(*) FILTER (WHERE TRY_CAST(latitude AS DOUBLE) IS NULL
                                    OR TRY_CAST(longitude AS DOUBLE) IS NULL) AS missing_coordinates
-        FROM read_csv('{csv_path}', all_varchar=true)
+        FROM read_csv('{csv_path}', normalize_names=true)
         """
     )
     return (source_audit,)
@@ -821,13 +773,14 @@ def _(csv_path, mo):
 
 @app.cell
 def _(pd, source_audit):
+    # Check the local input file before starting Task 1.
     _summary = source_audit.iloc[0]
-    assert 0 < _summary["rows"] < 250000, "Empty extract or API cap reached: obtain a complete snapshot."
+    assert _summary["rows"] > 0, "The CSV is empty. Check the saved file."
     assert _summary["rows"] == _summary["distinct_ids"], "Investigate repeated IDs before proceeding."
     assert _summary["bad_dates"] == 0, "Investigate unusable dates before splitting by time."
     assert pd.Timestamp(_summary["first_date"]).normalize() == pd.Timestamp("2025-01-01"), "The annual snapshot must start on 1 January 2025."
-    assert pd.Timestamp(_summary["last_date"]).normalize() == pd.Timestamp("2025-12-31"), "The annual snapshot must include 31 December 2025; check the filename and source notes."
-    print("Annual extract, unique-ID, and date-coverage checks passed.")
+    assert pd.Timestamp(_summary["last_date"]).normalize() == pd.Timestamp("2025-12-31"), "The annual snapshot must include 31 December 2025. Check the export's year filter."
+    print("Input check: PASS. Unique IDs, readable dates, and full-year coverage.")
     return
 
 
@@ -840,7 +793,7 @@ def _(csv_path, mo):
                COUNT(*) FILTER (WHERE TRY_CAST(latitude AS DOUBLE) IS NULL
                                    OR TRY_CAST(longitude AS DOUBLE) IS NULL) AS missing_coordinates,
                ROUND(100.0 * missing_coordinates / COUNT(*), 2) AS missing_pct
-        FROM read_csv('{csv_path}', all_varchar=true)
+        FROM read_csv('{csv_path}', normalize_names=true)
         WHERE TRY_CAST(date AS TIMESTAMP) >= TIMESTAMP '2025-01-01'
           AND TRY_CAST(date AS TIMESTAMP) < TIMESTAMP '2025-12-01'
         GROUP BY primary_type
@@ -866,9 +819,10 @@ def _(mo):
     mo.md(r"""
     Which categories dominate, and which have the largest missing-coordinate percentage?
 
-    Add a SQL calendar query for daily BURGLARY counts across all 334 January–November days,
-    then a Plotly chart. Its total should match `category_audit`'s BURGLARY count.
-    Keep December patterns hidden. Add one observation, possible explanation, and check you would need.
+    **Try now:** adapt A2's calendar query to BURGLARY over all 334 January–November days.
+    Name the result `daily_training_counts`, with `day` and `incidents` columns, then plot it with Plotly.
+    Check that its incident total matches BURGLARY in `category_audit`.
+    Describe one pattern, a possible explanation, and evidence you would need to test it. Keep December patterns hidden.
     Use [A2's calendar example](#a2-time-denominators-and-misleading-summaries).
     """)
     return
@@ -876,7 +830,9 @@ def _(mo):
 
 @app.cell
 def _():
-    # Add your daily training-count SQL cell and Plotly chart here.
+    # - Add a SQL cell named daily_training_counts with day and incidents columns.
+    # - Include all 334 calendar days, including days with zero records.
+    # - Compare its incident total with category_audit, then add a Plotly chart.
     return
 
 
@@ -887,7 +843,7 @@ def _(mo):
 
     Replace the next SQL cell.
 
-    - Read the annual file at `csv_path`; keep output name `selected_records`.
+    - Read the annual file at `csv_path` with `normalize_names=true`; keep output name `selected_records`.
     - Keep only BURGLARY in **all of 2025**, from 2025-01-01 inclusive to 2026-01-01 exclusive.
     - Return integer `id`, timestamp `occurred_at` from `date`, `primary_type`,
       and double `latitude`/`longitude`. Use `TRY_CAST`.
@@ -904,6 +860,7 @@ def _(mo):
 def _(mo):
     selected_records = mo.sql(
         f"""
+        -- Task 1: write your SQL here; keep the output name selected_records.
         -- Read the annual file, filter 2025 BURGLARY, and return five typed columns.
         -- Keep missing coordinates and all matching rows; order by id.
         SELECT 'Replace this with your filtered query' AS instruction
@@ -914,6 +871,7 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo, pd, selected_records, source_audit):
+    # Check the results of Task 1: columns, types, category, dates, and annual count.
     selection_ok = False
     try:
         _required = {"id", "occurred_at", "primary_type", "latitude", "longitude"}
@@ -930,21 +888,22 @@ def _(mo, pd, selected_records, source_audit):
         assert pd.api.types.is_datetime64_any_dtype(selected_df["occurred_at"]), "Cast date to TIMESTAMP."
         assert selected_df["occurred_at"].between("2025-01-01", "2026-01-01", inclusive="left").all(), "Use the specified date window."
         selection_ok = True
-        _message = f"**Tests passed.** {len(selected_df)} selected records. Check the query has no LIMIT and retains missing coordinates."
+        _message = f"**Task 1: PASS.** {len(selected_df)} annual burglary records, including missing coordinates."
     except AssertionError as _error:
         selected_df = None
-        _message = f"**Test failed:** {_error}"
+        _message = f"**Task 1: FAIL.** {_error}"
     mo.md(_message)
     return selected_df, selection_ok
 
 
 @app.cell
 def _(boundary_path, gpd):
-    # Estimate a local metric CRS from the city, then combine its boundary polygons.
+    # Prepare the fixed boundary for Tasks 2-5 and check its geometry and CRS.
     city_boundary = gpd.read_file(boundary_path)
     _city_metric_crs = city_boundary.estimate_utm_crs()
     city_boundary = city_boundary.to_crs(_city_metric_crs).dissolve()
     assert city_boundary.geometry.is_valid.all(), "Inspect the boundary before proceeding."
+    assert city_boundary.crs.is_projected, "Use a projected CRS before measuring areas."
     print("Study area (km²):", city_boundary.geometry.area.sum() / 1_000_000)
     city_boundary
     return (city_boundary,)
@@ -955,14 +914,14 @@ def _(mo):
     mo.md(r"""
     ## Task 2. Prepare points and account for exclusions
 
-    Write `prepare_points(records, boundary)`.
+    Write `prepare_points(records, boundary)`. Input: Task 1's table and the supplied metric boundary. Output: a GeoDataFrame.
 
     - Exclude missing/out-of-range coordinates and keep one row per ID.
     - Create EPSG:4326 points, project to the boundary's metric CRS, and keep
       points intersecting the boundary.
     - Return a GeoDataFrame retaining input attributes. Keep the boundary fixed.
-    - Show an audit for training and test: input, retained, missing/invalid coordinates,
-      duplicate IDs, and outside-boundary rows. Assign one reason per excluded row.
+    Then use a separate cell for your exclusion audit. For each period, show input, retained,
+    missing/invalid coordinates, duplicate IDs, and outside-boundary rows. Each input row needs one outcome.
 
     Use [A4's exclusion audit](#count-exclusions-by-period) for the last step.
     Review [A3](#a3-clean-deliberately-and-keep-future-records-separate) and
@@ -973,20 +932,24 @@ def _(mo):
 
 @app.function
 def prepare_points(records, boundary):
-    # - Check coordinates and duplicate IDs.
-    # - Create points, project, and filter against the boundary.
-    # - Return the GeoDataFrame with its original attributes.
-    # - Show exclusions by training/test period in an audit table.
+    # - Copy records; remove missing or out-of-range longitude/latitude.
+    # - Keep one row per ID. Repeated coordinates can be valid incidents.
+    # - Make EPSG:4326 points with longitude as x and latitude as y.
+    # - Project to boundary.crs and retain points intersecting the boundary.
+    # - Return a GeoDataFrame with the retained attributes; leave the inputs unchanged.
     return None
 
 
 @app.cell(hide_code=True)
 def _(box, city_boundary, gpd, mo, pd, selected_df, selection_ok):
+    # Check the results of Task 2, including a small coordinate and duplicate-ID example.
     mo.stop(not selection_ok, mo.md("Complete Task 1 before preparing Chicago points."))
+    _original = selected_df.copy()
     crime_points = prepare_points(selected_df, city_boundary)
     points_ok = False
     try:
         assert isinstance(crime_points, gpd.GeoDataFrame), "Return a GeoDataFrame."
+        assert selected_df.equals(_original), "Keep the input records unchanged. Work on a copy."
         assert not crime_points.empty and crime_points.crs == city_boundary.crs, "Return non-empty points in the boundary's metric CRS."
         assert crime_points.geom_type.eq("Point").all(), "Create point geometries."
         assert crime_points["id"].is_unique, "Keep one row per incident ID."
@@ -1003,15 +966,16 @@ def _(box, city_boundary, gpd, mo, pd, selected_df, selection_ok):
         _probe_result = prepare_points(_probe, _probe_boundary)
         assert _probe_result["id"].tolist() == [1], "Small check: retain ID 1 once; remove missing, outside, and invalid coordinates."
         points_ok = True
-        _message = f"**Tests passed.** Retained {len(crime_points)} of {len(selected_df)} records; explain the exclusions."
+        _message = f"**Task 2: PASS.** Retained {len(crime_points)} of {len(selected_df)} records. Complete your separate exclusion audit."
     except AssertionError as _error:
-        _message = f"**Test failed:** {_error}"
+        _message = f"**Task 2: FAIL.** {_error}"
     mo.md(_message)
     return crime_points, points_ok
 
 
 @app.cell
 def _(crime_points, mo, points_ok):
+    # Split the checked Task 2 points and check that the periods do not overlap.
     mo.stop(not points_ok, mo.md("Complete Task 2 before splitting the records."))
     # Task 1 kept all of 2025; this split keeps December out of training.
     train = crime_points.loc[
@@ -1026,6 +990,15 @@ def _(crime_points, mo, points_ok):
     assert train["occurred_at"].max() < test["occurred_at"].min()
     print("January–November training:", len(train), "December test:", len(test))
     return test, train
+
+
+@app.cell
+def _():
+    # Task 2: add your exclusion audit here, following A4.
+    # - Assign each original row to January-November or December before filtering.
+    # - Count input, missing/invalid coordinates, duplicates, outside, and retained rows.
+    # - Check that retained + all exclusions equals input for each period.
+    return
 
 
 @app.cell(hide_code=True)
@@ -1046,6 +1019,14 @@ def _(mo):
 
 
 @app.cell
+def _():
+    # - Plot train and the city outline on the same Matplotlib axes, following A4.
+    # - Inspect repeated coordinates. Do they necessarily mean duplicate incidents?
+    # - Use training records only when describing spatial patterns or choosing settings.
+    return
+
+
+@app.cell
 def _(city_boundary, make_grid):
     # Include every city cell, including places with no training records.
     chicago_grid = make_grid(city_boundary, 8)
@@ -1059,7 +1040,8 @@ def _(mo):
     mo.md(r"""
     ## Task 3. Build H3 hotspots from training points
 
-    Write `h3_hotspots(points, grid, area_budget)`.
+    Write `h3_hotspots(points, grid, area_budget)`. Use `train` and the supplied `chicago_grid`.
+    `area_budget` is an area in square metres, not a percentage or a number of cells.
 
     - Transform points to EPSG:4326 and assign resolution-8 H3 IDs.
     - Map counts onto a copy of the full grid, including zero cells.
@@ -1075,18 +1057,22 @@ def _(mo):
 
 @app.function
 def h3_hotspots(points, grid, area_budget):
-    # - Assign H3 IDs and count training points on the full grid.
-    # - Calculate density and rank cells within the area budget.
-    # - Return h3_id, count, and geometry in the grid CRS.
+    # - Reproject points to EPSG:4326; use a loop to assign resolution-8 H3 IDs.
+    # - Count IDs and map counts onto a copy of grid, filling absent counts with zero.
+    # - Calculate count / clipped cell area, then sort by density and h3_id.
+    # - Keep the positive-count prefix whose cumulative area fits area_budget.
+    # - Return h3_id, count, and geometry in the grid CRS, even for an empty result.
     return None
 
 
 @app.cell(hide_code=True)
 def _(chicago_grid, city_boundary, gpd, h3, mo, pd, train):
+    # Check the results of Task 3: counts, grid geometry, CRS, and area budget.
     h3_zones = h3_hotspots(train, chicago_grid, 0.1 * city_boundary.geometry.area.sum())
     h3_ok = False
     try:
         assert isinstance(h3_zones, gpd.GeoDataFrame), "Return a GeoDataFrame, including for an empty selection."
+        assert not h3_zones.empty, "This training dataset and 10% budget should retain some cells. Check counts and area units."
         assert {"h3_id", "count"}.issubset(h3_zones.columns), "Keep h3_id and count."
         assert h3_zones.crs == chicago_grid.crs, "Keep the metric CRS."
         assert h3_zones["h3_id"].is_unique, "Return each cell once."
@@ -1102,10 +1088,13 @@ def _(chicago_grid, city_boundary, gpd, h3, mo, pd, train):
         assert h3_zones["count"].tolist() == h3_zones["h3_id"].map(_counts).tolist(), "Check counts against training records."
         _reference = chicago_grid.set_index("h3_id").loc[h3_zones["h3_id"]]
         assert h3_zones.geometry.reset_index(drop=True).geom_equals(_reference.geometry.reset_index(drop=True)).all(), "Keep the supplied clipped grid geometries."
+        _zero = h3_hotspots(train, chicago_grid, 0)
+        assert isinstance(_zero, gpd.GeoDataFrame) and _zero.empty, "A zero area budget should return an empty GeoDataFrame."
+        assert {"h3_id", "count", "geometry"}.issubset(_zero.columns) and _zero.crs == chicago_grid.crs, "Preserve columns and CRS for the empty selection."
         h3_ok = True
-        _message = f"**Tests passed.** Selected {len(h3_zones)} cells. Review the density ranking and tie rule."
+        _message = f"**Task 3: PASS.** Selected {len(h3_zones)} cells. Inspect their density order and small edge cells."
     except AssertionError as _error:
-        _message = f"**Test failed:** {_error}"
+        _message = f"**Task 3: FAIL.** {_error}"
     mo.md(_message)
     return h3_ok, h3_zones
 
@@ -1131,15 +1120,18 @@ def _(mo):
 
 @app.function
 def dbscan_hotspots(points, eps_m, min_samples):
-    # - Cluster projected training points; exclude noise.
-    # - Build positive-area hulls and record cluster_id and n_points.
-    # - Keep the output columns and CRS even when no hull remains.
-    # - Print noise and zero-area hull counts; return a GeoDataFrame.
+    # - Make an x/y coordinate table from the projected points and fit DBSCAN.
+    # - Attach cluster labels to a copy; count and exclude noise label -1.
+    # - Loop over clusters, building a convex hull and counting its source points.
+    # - Keep positive-area hulls; count those discarded for zero area.
+    # - Return cluster_id, n_points, and geometry with points.crs, including when empty.
+    # - Print noise and discarded-hull counts so exclusions stay visible.
     return None
 
 
 @app.cell(hide_code=True)
 def _(demo_points, gpd, mo):
+    # Check Task 4 on A6's seven points before running DBSCAN on Chicago.
     db_ok = False
     try:
         _small = dbscan_hotspots(demo_points, 50, 3)
@@ -1153,9 +1145,9 @@ def _(demo_points, gpd, mo):
         assert {"cluster_id", "n_points", "geometry"}.issubset(_empty.columns), "Keep the result columns even when the table is empty."
         assert _empty.crs == demo_points.crs and _empty.geometry.name == "geometry", "Keep the CRS and active geometry on empty results."
         db_ok = True
-        _message = "**Tests passed:** two clusters at 50 m, empty output at 1 m."
+        _message = "**Task 4: PASS.** Two three-point clusters at 50 m; an empty spatial table at 1 m."
     except AssertionError as _error:
-        _message = f"**Test failed:** {_error}"
+        _message = f"**Task 4: FAIL.** {_error}"
     mo.md(_message)
     return (db_ok,)
 
@@ -1189,13 +1181,15 @@ def _(mo):
 
 @app.function
 def compute_pai(hits, total, hotspot_area, study_area):
-    # - Guard the undefined cases before dividing.
-    # - Return PAI for valid inputs, including zero hits.
+    # - Return None if total, hotspot_area, or study_area is zero.
+    # - Otherwise divide the hit fraction by the area fraction, following A7.
+    # - Return a number, including 0 when hits is zero and denominators are valid.
     return None
 
 
 @app.cell(hide_code=True)
 def _(mo):
+    # Check the results of Task 5 with hand-calculated and undefined cases.
     pai_ok = False
     try:
         assert compute_pai(20, 100, 10, 100) == 2, "20% hits in 10% area gives PAI 2."
@@ -1206,9 +1200,9 @@ def _(mo):
         assert compute_pai(0, 100, 0, 100) is None, "No hotspot area means undefined PAI."
         assert compute_pai(0, 100, 10, 0) is None, "No study area means undefined PAI."
         pai_ok = True
-        _message = "**Tests passed:** ordinary cases, whole-area baseline, zero hits, and undefined denominators."
+        _message = "**Task 5: PASS.** Ordinary cases, whole-city baseline, zero hits, and undefined denominators."
     except AssertionError as _error:
-        _message = f"**Test failed:** {_error}"
+        _message = f"**Task 5: FAIL.** {_error}"
     mo.md(_message)
     return (pai_ok,)
 
@@ -1224,18 +1218,22 @@ def _(mo):
 
 @app.cell
 def _(city_boundary, db_ok, db_zones, h3_ok, h3_zones, mo, pai_ok, pd, test):
+    # Apply Task 5 to the two hotspot maps and check the whole-city baseline.
     mo.stop(not (h3_ok and db_ok and pai_ok), mo.md("Complete Tasks 3–5 before evaluating December."))
     # Evaluate both methods on the same December records and fixed city boundary.
     _study = city_boundary.geometry.union_all()
     _results = []
     for _name, _zones in [("H3", h3_zones), ("DBSCAN hulls", db_zones), ("Whole city", city_boundary)]:
+        # A union counts overlapping hotspot polygons only once.
         _hotspot = _zones.geometry.union_all().intersection(_study)
         _hits = int(test.intersects(_hotspot).sum())
+        _hit_rate = _hits / len(test)
+        _area_fraction = _hotspot.area / _study.area
+        _pai = compute_pai(_hits, len(test), _hotspot.area, _study.area)
         _results.append({
             "method": _name, "hits": _hits, "test_records": len(test),
-            "hit_rate": _hits / len(test), "hotspot_km2": _hotspot.area / 1_000_000,
-            "area_fraction": _hotspot.area / _study.area,
-            "PAI": compute_pai(_hits, len(test), _hotspot.area, _study.area),
+            "hit_rate": _hit_rate, "hotspot_km2": _hotspot.area / 1_000_000,
+            "area_fraction": _area_fraction, "PAI": _pai,
         })
     results = pd.DataFrame(_results)
     assert abs(results.loc[results["method"] == "Whole city", "PAI"].iloc[0] - 1) < 1e-9
@@ -1260,11 +1258,12 @@ def _(mo):
     Build your Chicago map.
 
     - Centre Leafmap Kepler at `[41.88, -87.63]`, zoom 10.
-    - Add the city outline, H3 hotspots, and DBSCAN hulls in EPSG:4326.
+    - Add the city outline and each non-empty hotspot layer in EPSG:4326.
       Omit `h3_id` from the display copy.
     - Freeze method settings before adding December points; inspect missed incidents.
     - Label periods, category, and sources; use clear layer names and transparency.
-    - Display the map in marimo and answer the reflection questions below.
+    - Display the map in marimo. Report empty layers rather than inventing hotspot area.
+    - Check the map visually, then answer the reflection questions below.
 
     Review [A8](#a8-explore-with-leafmaps-kepler-backend),
     [A2](#a2-time-denominators-and-misleading-summaries), and
@@ -1275,9 +1274,12 @@ def _(mo):
 
 @app.cell
 def _():
-    # - Build a Kepler map with the three EPSG:4326 layers.
+    # Task 6: build and inspect your map here, following A8.
+    # - Add the city outline and non-empty hotspots in EPSG:4326.
     # - Add December points only after freezing the methods.
     # - Label the map and display it here, following A8.
+    # - Check that layers align with Chicago and that H3 displays clipped cell shapes.
+    # - Describe one missed area using the table, map, and a limitation of the records.
     return
 
 

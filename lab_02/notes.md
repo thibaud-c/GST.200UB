@@ -22,7 +22,6 @@ For a local copy, open this file in VS Code and use **Open Preview to the Side**
 - [A7. PAI: distinguish hits from area covered](#a7).
 - [Python guards and `None`](#none-guard).
 - [A8. Explore with Leafmap's Kepler backend](#a8).
-- [B0. Know the source before downloading](#b0).
 - [B1. Audit the extract with DuckDB](#b1).
 - [Task 1. Select the analysis records in SQL](#task-1).
 - [Task 2. Prepare points and account for exclusions](#task-2).
@@ -436,270 +435,369 @@ records. You can return to any example while completing Part B.
 
 ## Part B. Reproduce the evaluation idea with Chicago data
 
-<a name="b0"></a>
-
-### B0. Know the source before downloading
-
-Use the City of Chicago's [Crimes — 2001 to Present](https://data.cityofchicago.org/d/ijzp-q8t2).
-These are police-recorded reports, not all crimes that occurred. Reporting,
-recording, and enforcement practices affect the pattern. The source treats murders
-as records per victim; other records describe reported incidents. Read the metadata
-before treating categories as directly comparable.
-
-The portal omits the latest seven days, revises records, and provides approximate
-locations. Its notice prohibits deriving exact addresses and cautions against
-comparisons over time. Our temporal split is a teaching experiment on recorded
-patterns, not a claim about changes in true crime or safety. Do not identify people,
-reconstruct addresses, label neighbourhoods “dangerous,” or propose patrol targets
-from these results.
-
-The download covers **all of 2025**, from **2025-01-01 inclusive to 2026-01-01
-exclusive**, including 31 December. It saves `data/chicago_2025.csv`. Task 1 selects
-BURGLARY throughout that same year. Training is **2025-01-01 inclusive to
-2025-12-01 exclusive**; December evaluation is **2025-12-01 inclusive to
-2026-01-01 exclusive**. The extract retains all
-categories for training EDA; the core model uses **BURGLARY**. Chicago's label
-does not necessarily match the paper's residential-burglary category.
-
-The cell below downloads a bounded CSV and city boundary once to `data/` and
-records the URLs and UTC retrieval time. It uses the portal's API, a web interface
-for requesting data. The `$where` filter runs on the portal; later SQL runs locally
-in DuckDB. The limit is a safety cap, not a random sample; the audit checks it was
-not reached. Do not enlarge the date window without adding pagination or using
-a complete portal export.
-
-Run this cell once. Paths assume this notebook's working folder is `lab_02`; see the
-[relative-path guide](https://github.com/thibaud-c/GST.200UB/blob/main/tutorials/03_cli.md#relative-paths-in-a-notebook).
-
-You can also [filter and export the data on the website](README.md#download-from-the-website).
-Save that original as `data/chicago_2025_export.csv`. When no analysis CSV is cached,
-B0 imports it into `data/chicago_2025.csv`. This conversion standardises headers
-such as `Primary Type` to `primary_type` and converts the website's dates to a
-consistent timestamp format. The raw export stays unchanged. The import checks
-the year and size before writing, and records its source and import time.
+Can a hotspot map built from earlier records locate incidents recorded later?
+This part connects data quality, spatial methods, and an honest evaluation.
+Use it as a reference while working through the [exercise](exercise.py).
+The [README](README.md#part-b-data-and-workflow) lists the two local files and setup steps.
 
 <a name="b1"></a>
 
 ### B1. Audit the extract with DuckDB
 
-(See [A1](#a1-eda-begins-with-questions-about-the-records): counts, missing values,
-and `TRY_CAST`; [A2](#a2-time-denominators-and-misleading-summaries): calendar counts and denominators.)
+#### Understand what a row represents
 
-DuckDB scans the file and returns a small summary rather than loading the whole
-city's table into a GeoDataFrame. This becomes useful with larger archives. CSV
-still needs scanning; Parquet can additionally skip columns and data blocks.
-“Fast” does not mean every query reads only its returned rows.
+The [Chicago source](https://data.cityofchicago.org/d/ijzp-q8t2) contains
+police-recorded reports. Reporting, recording, and enforcement affect which
+incidents enter the table. A location with more records may have more activity,
+more reporting, or both. Without an exposure denominator such as residents,
+visitors, or businesses, a count is not an individual risk estimate.
 
-We read as text (`all_varchar=true`) and explicitly convert fields so that bad
-values can be counted. Inspect schema, count, date coverage, missing coordinates,
-and duplicate IDs **before** dropping anything. Read the cached `.source.txt`
-files when noting the data version used.
+Read the source's category definitions. Its murder records are per victim,
+whereas other categories describe reported incidents. The core exercise selects
+BURGLARY, which is not necessarily the paper's residential-burglary category.
+Locations are approximate, and records can be revised. Keep your saved files
+fixed, record their download date, and respect the source's restriction on
+recovering exact addresses.
 
-| Audit table | Period and purpose |
-| --- | --- |
-| `source_audit` | All 2025, for coverage, unique IDs, missing values, and Task 1's annual burglary count. |
-| `category_audit` | January–November, for training EDA and daily-count checks. |
+#### Read the file before building geometry
 
-Match each check to its period. Task 1 keeps all annual burglaries, while EDA
-uses training records only. These counts come from
-the same cached file and may change when the portal revises its records. SQL
-results in this notebook are pandas DataFrames.
+DuckDB can scan the CSV and return a short summary. This avoids creating a
+citywide GeoDataFrame before knowing which records you need. CSV queries still
+scan data; a small result does not imply a small amount of reading. Parquet can
+offer more opportunities to skip columns or data blocks.
 
-Explore this table before coding a model:
+The notebook uses `read_csv(..., normalize_names=true)`. DuckDB detects column
+types and converts headers such as `Primary Type` to `primary_type` for queries.
+The original CSV stays unchanged. Start with the `DESCRIBE` result to see the
+names and types DuckDB found. `TRY_CAST(value AS type)` attempts a conversion
+and returns SQL `NULL` when conversion is impossible.
 
-1. Which categories dominate? Which have the highest missing-coordinate percentage?
-2. Compare percentage and absolute missing counts. Would you prioritise the same rows?
-3. Read the category descriptions in the source. Why would combining THEFT and
-   BURGLARY change the question? Do not silently drop categories with unfamiliar labels.
-4. Could a change in reporting or geocoding explain a pattern you were about to
-   attribute to human behaviour?
+Read the two audits as different questions:
 
-Add one SQL cell for the daily **training-period** counts of BURGLARY. Use the
-calendar pattern in [A2](#a2-time-denominators-and-misleading-summaries)
-for all 334 days of January–November. Make a Plotly chart;
-check gaps and coverage before interpreting peaks. Keep December hidden from this
-pattern exploration. Your table should have 334 calendar days, and its total
-should equal the BURGLARY count in `category_audit`. Add a Markdown cell separating **observation**, **possible
-explanation**, and **evidence you would need**.
+| Output | Period | What to learn |
+| --- | --- | --- |
+| `source_audit` | All of 2025 | Does the file cover the year? Are IDs unique? Are dates usable? How many annual burglaries are present? |
+| `category_audit` | January–November | Which recorded categories dominate training data? Where are coordinates missing? |
+
+`COUNT(*)` counts rows; `COUNT(column)` skips nulls; `COUNT(DISTINCT id)` counts
+different IDs. Equal row and distinct-ID counts suggest one row per ID. They
+do not establish completeness or accurate geocoding. The year-start and
+year-end checks likewise test date coverage, not whether every report is present.
+If a check fails, inspect the export and its filters before deleting rows to make it pass.
+
+Compare missing-coordinate counts with percentages. A large category can have
+the most missing locations but a smaller missing percentage. Excluding those
+rows changes the mapped sample. The source audit counts missing or unreadable
+coordinates; Task 2 also checks coordinate ranges and the city boundary.
+
+#### Explore time without seeing the test pattern
+
+The training calendar has 334 days. A daily query should retain days with zero
+recorded burglaries, using the calendar join from [A2](#a2). Otherwise gaps
+disappear from the plot and averages can be misleading. Keep the output columns
+`day` and `incidents`. Their total should match the BURGLARY row of
+`category_audit`, because both describe the same period before spatial exclusions.
+
+Describe what the plot shows before proposing why it occurs. For example,
+a reporting delay and a change in incident frequency need different evidence.
+See [A1](#a1) for missing-value queries and [A2](#a2) for denominators.
+
+[Open B1 in the exercise](exercise.py#L748).
 
 <a name="task-1"></a>
 
 ### Task 1. Select the analysis records in SQL
 
-(See [A1](#a1-eda-begins-with-questions-about-the-records): SQL audit and conversion;
-[A3](#a3-clean-deliberately-and-keep-future-records-separate): filters and date windows.)
+The SQL task produces a small, typed table for spatial analysis. Its output,
+`selected_records`, contains an incident ID, occurrence timestamp, category,
+latitude, and longitude. Use aliases to name the timestamp `occurred_at`.
 
-Replace the next SQL cell. Its output must stay named `selected_records`.
-Read `csv_path` with `read_csv` as above. Return only:
+The selection covers all 2025 burglaries. Keeping December here is deliberate:
+we still need its records for evaluation. The split comes after spatial cleaning.
+A half-open interval includes its start and excludes its end, so
+`2025-01-01 <= occurred_at < 2026-01-01` includes 31 December without
+depending on a particular time of day.
 
-- `id` as an integer;
-- `date` converted to a timestamp and renamed `occurred_at`;
-- `primary_type`, `latitude`, and `longitude` (coordinates as doubles).
+Keep missing coordinates at this stage. Dropping them in SQL would hide part of
+the exclusion audit. Do not use `LIMIT`, because the first rows are not a
+representative spatial or temporal sample. The check compares your result with
+the annual BURGLARY count in `source_audit`, not the January–November count.
 
-Keep BURGLARY records from **2025-01-01 inclusive to 2026-01-01 exclusive**.
-Use `TRY_CAST` and keep missing coordinates for now so Task 2 can account for
-exclusions. Order by `id`. Do not use `LIMIT`: it would bias the model's input.
-The placeholder query below is deliberately harmless; write your own full query.
-The following check uses the annual burglary count in `source_audit`. Keep
-December in this selection; the later split keeps it out of training.
+| SQL tool | Role in this task |
+| --- | --- |
+| `SELECT ... AS ...` | Choose columns and name the outputs. |
+| `TRY_CAST(... AS TIMESTAMP)` | Convert dates to timestamps; failed conversions become nulls. |
+| `WHERE` with `AND` | Apply the category and date conditions together. |
+| `ORDER BY id` | Make row order predictable. It does not remove duplicates. |
+
+Every SQL cell needs a unique output name. Edit the existing `selected_records`
+cell instead of creating another cell with that name.
+Review [A1](#a1) and [A3](#a3), or the [SQL tutorial](../tutorials/07_duckdb.md).
+
+[Open Task 1 in the exercise](exercise.py#L858).
 
 <a name="task-2"></a>
 
 ### Task 2. Prepare points and account for exclusions
 
-(See [A3](#a3-clean-deliberately-and-keep-future-records-separate): coordinate checks and duplicate IDs;
-[A4](#a4-geometry-distances-and-a-fixed-study-area): points, CRS, and boundary predicates.)
+A GeoDataFrame combines ordinary attributes with geometry and a coordinate
+reference system. Here the input is the SQL table and the output is a point
+GeoDataFrame in the city boundary's projected CRS. The function returns that
+GeoDataFrame only. Build the exclusion audit in the separate workspace.
 
-Write `prepare_points(records, boundary)`. Return a GeoDataFrame in the boundary's
-metric CRS, keeping the original attributes. Exclude missing or out-of-range
-coordinates, keep one row per ID, make points in EPSG:4326, project them, and keep
-only points intersecting the city boundary. The SQL step already validated dates.
-Inspect the boundary: our footprint includes everything in that polygon, without
-an exposure or land-use mask. Keep it identical for every method.
+Longitude is x and latitude is y for `points_from_xy`. Declare the input as
+EPSG:4326, then use `.to_crs(boundary.crs)` to transform it. Declaring a CRS
+describes existing coordinates; transforming a CRS changes their coordinates.
+Distances and areas in longitude/latitude degrees are unsuitable for our metre
+and square-metre calculations.
 
-The following cell reports how many records were removed. Add your own breakdown
-of missing coordinates versus outside-boundary records, separately for training
-and test. A single retained-row count can hide unequal exclusions.
-Use the [A4 exclusion audit](#exclusion-audit) to organise the counts and keep
-one reason per excluded row.
+Missing values and impossible ranges should be excluded before geometry
+creation. A coordinate inside the global ranges can still be wrong for Chicago,
+so the city-boundary test is a separate step. `intersects` includes points on
+the boundary, while `within` excludes points exactly on its edge. We use
+`intersects` consistently in this exercise.
+
+Deduplicate by incident ID, not by coordinates. Several distinct reports can
+share a location, particularly when locations are approximate. Work on copies
+so the original rows remain available for comparison.
+
+Keep the city footprint fixed for every method. It has no population or
+land-use mask. Changing that footprint would change the study-area denominator
+in PAI, even if the hotspot polygons stayed the same.
+
+#### Make exclusions add up
+
+Assign the period from each original row's `occurred_at` before filtering.
+Record one outcome per row, in a stated order: missing/invalid coordinates,
+duplicate ID among remaining rows, outside the boundary, or retained. Once a
+row receives an exclusion reason, do not count it again under another reason.
+
+Present one row per period:
+
+| Period | Input | Missing/invalid coordinates | Duplicate IDs | Outside boundary | Retained |
+| --- | --- | --- | --- | --- | --- |
+| January–November | Your count | Your count | Your count | Your count | Your count |
+| December | Your count | Your count | Your count | Your count | Your count |
+
+For each period, input must equal retained plus all exclusions. Also compare
+the retained fraction, not just the number dropped. An unequal fraction means
+the model and evaluation may describe differently selected samples. The small
+probe in Task 2 checks your function; it does not replace this audit of the
+actual records. Use the [worked exclusion audit](#exclusion-audit) for the table pattern.
+
+Review [A3](#a3) for cleaning and [A4](#a4) for geometry and projection.
+
+[Open Task 2 in the exercise](exercise.py#L931).
 
 <a name="training-geography"></a>
 
 ### Inspect training geography before choosing hotspots
 
-(See [A3](#a3-clean-deliberately-and-keep-future-records-separate): avoiding test leakage;
-[A5](#a5-h3-and-discrete-global-grids): H3 count distributions and densities.)
+The notebook splits the retained points at 1 December:
 
-Use a Matplotlib scatter map of `train` against the city outline. Look for distant
-points and repeated coordinates. Add an H3 count histogram after building the grid
-below. Compare its mean and median, and count zero cells. Skewed counts explain
-why a mean-based threshold may behave unexpectedly.
+| Role | Included dates | Permitted use |
+| --- | --- | --- |
+| `train` | 1 January through 30 November 2025 | Explore spatial patterns and build the hotspot maps. |
+| `test` | 1 through 31 December 2025 | Evaluate the maps after their settings are fixed. |
 
-Freeze the following course settings **before** viewing test patterns: H3 resolution
-8 with a 10% area budget; DBSCAN `eps=500` m and `min_samples=10`. These are teaching
-settings, not estimated optimal values. For parameter selection, use the
-January–October fitting and November validation plan from
-[A3](#a3-clean-deliberately-and-keep-future-records-separate), record your choice, then refit on the
-full training period. Do not optimise settings against December PAI.
+Map `train` with the city outline before clustering. Look for points outside
+the expected extent and repeated locations. Later, inspect the full H3 count
+histogram, including zero cells. A few high counts can pull the mean far above
+the median. A zero means no retained training reports of this category in that
+cell, not proof of safety.
+
+Use the course settings first: H3 resolution 8 with a 10% city-area budget;
+DBSCAN `eps=500` metres and `min_samples=10`. These settings make a reproducible
+comparison, not a claim that they are optimal. Choosing settings after viewing
+December PAI would use the test data twice and favour a lucky result.
+For an extension, fit on January–October and compare settings on November,
+then fix the choice, refit on January–November, and evaluate December once.
+See [A3](#a3) and [A5](#a5).
 
 <a name="task-3"></a>
 
 ### Task 3. Build H3 hotspots from training points
 
-(See [A5](#a5-h3-and-discrete-global-grids): H3 IDs, zero cells, density, and area budgets.)
+H3 gives every location a cell ID at a chosen resolution. The same resolution
+and coordinate order must be used for assigning incidents and building the
+grid. `h3.latlng_to_cell` takes latitude first. Shapely point coordinates use
+x then y, so a geographic point supplies `point.y` then `point.x`.
 
-Write `h3_hotspots(points, grid, area_budget)`. Transform points to
-EPSG:4326, assign resolution-8 H3 IDs, count them, and map counts to a **copy** of
-the full grid. Fill empty cells with zero. Compute density from each clipped
-cell's actual area. Sort by density descending, then H3 ID ascending. Return the
-positive-count prefix whose cumulative area is at most `area_budget`, keeping
-`h3_id`, `count`, and the metric geometry. Do not replace the area budget with a
-quantile of cell counts.
+`chicago_grid` contains city-intersecting resolution-8 cells, clipped to the
+city. Map training counts onto a copy of this full grid and fill absent counts
+with zero. Starting only from occupied cells would hide the zero-count areas.
+Counts per cell can differ from density because clipping produces unequal
+cell areas at the city edge. Density here is count divided by the cell's
+clipped metric area. Small fragments can have high densities from few incidents;
+inspect them on the map.
 
-Inspect zero counts and very small edge cells before selection. Explain why a
-10% cell selection need not cover 10% of the city, even with a global grid.
+The budget passed to `h3_hotspots` is in square metres. The calling cell
+calculates 10% of the city area. Sort by density descending, then H3 ID
+ascending to settle ties reproducibly. The task keeps a prefix of that ranking:
+
+| Ranked cell | Area in km² | Cumulative area in km² | Keep with a 6 km² budget? |
+| --- | --- | --- | --- |
+| First | 2 | 2 | Yes |
+| Second | 3 | 5 | Yes |
+| Third | 4 | 9 | No |
+
+Do not skip an oversized ranked cell to fit lower-ranked cells later. Whole
+cells can leave part of the budget unused. This is why selecting a percentage
+of cells or a count quantile would answer a different question. A zero budget
+returns an empty GeoDataFrame with the same required columns and CRS.
+
+Inspect the selected counts and one boundary fragment before trusting the
+result. Review [A5](#a5) for loops, count mapping, ranking, and cumulative area.
+
+[Open Task 3 in the exercise](exercise.py#L1057).
 
 <a name="task-4"></a>
 
 ### Task 4. Turn DBSCAN clusters into hotspot polygons
 
-(See [A6](#a6-dbscan-density-connected-points): `eps`, `min_samples`, noise, and convex hulls.)
+DBSCAN groups nearby points through density connectivity. `eps_m` is the
+maximum neighbour distance in metres. `min_samples` is the number of nearby
+points required for a core point, including the point itself. Chains of core
+points can connect a cluster across a much larger distance than `eps_m`.
 
-Write `dbscan_hotspots(points, eps_m, min_samples)`. Use projected x/y coordinates
-from the supplied **training** points. Fit DBSCAN, exclude noise label -1, and take
-one convex hull per cluster. Return a GeoDataFrame of positive-area hulls in the
-input CRS, with `cluster_id` and `n_points`. Print the number of noise points and
-zero-area hulls excluded. Return an empty GeoDataFrame with these columns when
-there are no usable clusters. Do not sample test points or buffer zero-area hulls
-to manufacture a PAI denominator.
+Use projected x/y values from `train`. Geographic degrees would make a 500-unit
+neighbour distance meaningless for this task. Attach the fitted labels to a
+copy of the points. Label `-1` means noise under these settings, not a location
+without crime or a point that can be removed from evaluation.
 
-Start with the seven-point example before applying it to Chicago. Label numbers
-can vary; cluster membership and sizes are what matter.
-The [A6 schema example](#cluster-schema) shows how to retain columns, geometry,
-and CRS for an empty result. Task 4's check verifies those properties too.
+A cluster is initially a group of points, not an area. The task converts each
+non-noise cluster to a convex hull, the smallest convex polygon enclosing its
+points. A hull can span unoccupied space, rivers, or gaps. Clipping it to the
+city later does not remove all those limitations. This is also a methodological
+change from the paper's spatial ellipses.
+
+The result has one row per positive-area hull, with `cluster_id`, `n_points`,
+and `geometry`. Count source points before building the hull; counting hull
+vertices would lose interior and repeated-location incidents. Print the noise
+count and the number of discarded zero-area hulls. Collinear or coincident
+points can produce a line or point rather than a polygon. Do not buffer those
+results just to create a denominator for PAI.
+
+If no usable hull remains, return an empty spatial table with those columns
+and `points.crs`. An empty result is meaningful; losing its schema would cause
+the later comparison to fail. The [A6 schema example](#cluster-schema) shows the
+pattern. The Task 4 check uses A6's seven points before applying your function
+to Chicago. Cluster numbers may differ; membership and sizes matter.
+Review [A6](#a6) and the [DBSCAN worked example](https://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html).
+
+[Open Task 4 in the exercise](exercise.py#L1121).
 
 <a name="task-5"></a>
 
 ### Task 5. Calculate and interpret PAI
 
-(See [A7](#a7-pai-distinguish-hits-from-area-covered): the PAI formula and hit counting;
-[A4](#a4-geometry-distances-and-a-fixed-study-area): metric areas and a fixed boundary.)
+The prediction accuracy index compares the fraction of test incidents captured
+with the fraction of study area covered:
 
-Write `compute_pai(hits, total, hotspot_area, study_area)`. Return the PAI formula.
-Return `None` if there are no test records or either area is zero. Zero hits with
-positive denominators gives 0. All inputs here are non-negative and areas share
-the same units. Try the hand-calculated examples first.
-Use the [A7 guard example](#none-guard) if `None` and early `return` are new to you.
+$$
+\mathrm{PAI} = \frac{\mathrm{hits}/\mathrm{total}}{\mathrm{hotspot\ area}/\mathrm{study\ area}}.
+$$
 
-The shared evaluation below applies the same union, clipping, and boundary-point
-rules to both methods. Read it before running. H3 uses a 10% area budget; DBSCAN's
-area emerges from its clusters. **Different area coverage limits a direct ranking.**
-The whole-city baseline has PAI 1 and 100% hit rate but gives no spatial focus.
+Capturing 25% of December records in 10% of the city gives PAI 2.5. It means
+recorded test incidents are concentrated within the selected area relative to
+the citywide average. It does not mean the model is 250% accurate or estimates
+an individual's risk. A whole-city map has PAI 1 and captures every retained
+test incident, while providing no spatial focus.
+
+`compute_pai` receives counts and areas. Areas must use the same units. Return
+`None` before dividing when the test count, hotspot area, or study area is zero.
+With positive denominators, zero hits gives a valid PAI of zero. Python `None`
+means no defined result; it is different from `0` or the string `"None"`.
+See the [A7 guard example](#none-guard) for early returns.
+
+#### Read the supplied evaluation cell
+
+Both methods use the same December points, fixed city boundary, and spatial
+predicate. The code unions hotspot polygons before intersecting them with the
+city. That measures overlapping areas once. A point intersecting the union is
+one hit even if it touches several original polygons. Boundary points are
+included, consistently with Task 2.
+
+Read the resulting columns together:
+
+| Column | Meaning |
+| --- | --- |
+| `hits` / `test_records` | Captured and total retained December burglaries. |
+| `hit_rate` | Fraction of those December records captured. |
+| `hotspot_km2` / `area_fraction` | How much of the fixed city footprint is selected. |
+| `PAI` | Hit fraction divided by area fraction, or undefined for a zero denominator. |
+
+H3 has an area budget; DBSCAN's area emerges from its clusters and settings.
+A higher PAI alone cannot settle which map is preferable. A small map might
+capture few incidents at high concentration. Compare its hit rate and area
+with the other map, and state the trade-off. Empty hotspots produce zero hits
+and undefined PAI, not an infinite score. Review [A7](#a7) for the hand calculation.
+
+[Open Task 5 in the exercise](exercise.py#L1183).
 
 <a name="task-6"></a>
 
 ### Task 6. Inspect maps and challenge your conclusion
 
-(See [A8](#a8-explore-with-leafmaps-kepler-backend): Kepler layers;
-[A2](#a2-time-denominators-and-misleading-summaries): denominators;
-[A7](#a7-pai-distinguish-hits-from-area-covered): interpreting hits and area coverage.)
+Use Leafmap's Kepler backend to inspect the city outline and non-empty hotspot
+layers. Transform display copies to EPSG:4326; keep projected analysis layers
+for measuring areas. Remove `h3_id` from the H3 display copy so Kepler uses the
+clipped polygon geometry rather than reconstructing a whole H3 cell from its ID.
 
-Create a Leafmap Kepler map centred at `[41.88, -87.63]`, zoom 10. Add the city
-outline, H3 hotspots, and DBSCAN hulls in EPSG:4326. After freezing the methods,
-you may add December points to inspect misses. Omit `h3_id` from the H3 display
-copy so the map uses clipped geometries. Use distinct layer names, transparency,
-and a legend stating the period and crime category. Keep source attribution.
-Inspect hulls spanning empty space, clipped grid edges, and incidents missed by
-both methods. Use a Matplotlib map for a side-by-side static comparison if helpful.
+Add December points only after fixing the hotspot maps. Look for missed
+incidents and hulls spanning empty space. Compare one place captured by only
+one method with a place captured by both. Use distinct layer names, readable
+colours and transparency, and show the category, dates, and City of Chicago
+source. An empty hotspot layer should be reported and omitted from the map.
+
+Task 6 has a visual check rather than a single correct map. Do the layers line
+up with Chicago? Are H3 boundary cells clipped? Can you tell the two methods
+apart and inspect their records? Does the map support the comparison in your
+results table? A Matplotlib comparison is also useful; see [A8](#a8) and the
+[visualization tutorial](../tutorials/09_visualization.md).
+
+[Open Task 6 in the exercise](exercise.py#L1272).
 
 <a name="reflection"></a>
 
-Reflect beside your outputs; there is no separate report:
+Reflect beside your outputs:
 
-- How many records were excluded, and did the exclusion fraction differ by period?
-- Which method captured more incidents? Which concentrated hits in less area?
-  Would your conclusion change if you compared only PAI?
-- What denominator would be needed to discuss risk, rather than recorded incident density?
-- What do zero cells and DBSCAN noise actually mean? Do either establish safety?
-- Which choices came from the paper, and which are our adaptations?
-- How might reporting practices, approximate geocoding, or the city boundary
-  explain a pattern? What evidence would distinguish those explanations?
-- Revisit your initial proposal. What did EDA change about it?
+- Did exclusion fractions differ between training and test? What might that change?
+- Which map captured more December incidents, and which covered less area?
+  Would ranking by PAI alone hide a trade-off?
+- What denominator would you need to discuss risk rather than recorded counts?
+- What do zero H3 cells and DBSCAN noise mean under this design?
+- Which choices follow the paper, and which adapt it? What did EDA change in your initial proposal?
+- Which additional evidence would help distinguish a data-quality issue from a spatial pattern?
 
-A stable pattern is an association in recorded data, not an explanation of why
-crime happens. PAI cannot measure fairness, prevention, or the consequences of
-acting on a map. No result here justifies decisions about individuals or neighbourhoods.
+These results test associations in recorded incidents. They do not explain
+causes or measure fairness, prevention, or the effects of acting on a map.
 
 ### Further investigation
 
-Choose one extension after completing the core:
+Choose one extension after the core tasks:
 
-1. **Validation:** fit on January–October and score on November for two prespecified H3
-   resolutions or DBSCAN radii. Choose without December, refit on January–November,
-   and evaluate December once. Log area fraction as well as PAI.
-2. **Matched area:** compare maps with similar measured hotspot coverage, reporting
-   the remaining difference. Explain why this is more informative than comparing
-   the top 10% of differently sized units.
-3. **Transfer:** repeat the fixed design for another recorded category without
-   changing thresholds after inspecting its test results. Explain category definitions.
-4. **Closer to the paper:** add an administrative-area baseline or KDE and document
-   its footprint threshold. A smooth density surface needs a declared area threshold
-   before PAI can be calculated.
+1. Compare two prespecified settings using January–October for fitting and
+   November for validation. Refit the chosen method on January–November,
+   then evaluate December once. Record area coverage as well as PAI.
+2. Compare hotspot maps with similar measured area coverage. Explain why this
+   gives a different comparison from selecting the same percentage of cells.
+3. Repeat the fixed design for another recorded category. Read its definition
+   and keep settings fixed before viewing its test results.
+4. Add an administrative-area baseline or KDE to move closer to the paper.
+   A continuous density surface needs an explicit hotspot-area threshold for PAI.
 
-Moran's I and Gi* ask about spatial association or local concentrations under a
-specified weights structure and null model. They are not replacements for a
-future-period test. Study weights, zero cells, permutations, and multiple testing
-before adding them; see [PySAL's ESDA tutorials](https://pysal.org/esda/tutorial.html).
+Moran's I and Gi* address spatial association under a chosen weights structure
+and null model. They do not replace future-period evaluation. For further study,
+start with [PySAL's ESDA tutorials](https://pysal.org/esda/tutorial.html).
 
 ### Documentation and walkthroughs
 
 - [Source paper and open preprint](https://discovery.ucl.ac.uk/id/eprint/112873/)
 - [Chicago crime metadata](https://data.cityofchicago.org/d/ijzp-q8t2) and [city boundary](https://data.cityofchicago.org/d/qqq8-j68g)
-- [Socrata query filters](https://dev.socrata.com/docs/queries/where.html)
-- [DuckDB CSV reader](https://duckdb.org/docs/stable/data/csv/overview.html)
+- [DuckDB CSV reader](https://duckdb.org/docs/stable/data/csv/overview.html) and [safe casting](https://duckdb.org/docs/stable/sql/expressions/cast.html)
+- [GeoPandas introduction](https://geopandas.org/en/stable/getting_started/introduction.html)
 - [H3 polygon tutorial](https://uber.github.io/h3-py/polygon_tutorial.html)
 - [DBSCAN worked example](https://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html)
 - [Plotly bar charts](https://plotly.com/python/bar-charts/) and [Leafmap Kepler walkthrough](https://leafmap.org/notebooks/26_kepler_gl/)
 - [Geographic Data Science: exploratory spatial data analysis](https://geographicdata.science/book/notebooks/06_spatial_autocorrelation.html)
-
-AI has been used to review and improve the course materials.

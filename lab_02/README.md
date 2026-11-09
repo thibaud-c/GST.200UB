@@ -47,23 +47,37 @@ This notebook uses `lab_02` as its working folder, so `data/` means `lab_02/data
 The notebook is an adaptation of the paper's evaluation approach, using a different
 city, period, and method selection.
 
-## Data and reproducibility
+## Part B: data and workflow
 
-The notebook downloads **all of calendar year 2025**, from 1 January 2025 inclusive
-to 1 January 2026 exclusive, from
-[Chicago's crime portal](https://data.cityofchicago.org/d/ijzp-q8t2) and the
-[city boundary](https://data.cityofchicago.org/d/qqq8-j68g), then reuses the local
-files in `lab_02/data/`. The crime file is `chicago_2025.csv`; source notes record
-its query and retrieval time. Use **January–November for training** and predict
-hotspots for **December**, then evaluate them against December's held-out records.
-The cutoff is 1 December 2025: that date belongs to the test period.
+Use the files you downloaded manually. Part B reads them locally; it does not
+download, overwrite, or convert them into another saved file.
 
-`source_audit` checks the annual extract, `category_audit` supports training-period
-EDA for January–November, and Task 1 checks its full-year burglary selection against
-`source_audit`. Counts come from your snapshot; they are not fixed answers.
-The portal revises records, so keep the same snapshot when comparing methods.
+| File in `lab_02/data/` | Contents |
+| --- | --- |
+| `chicago_2025.csv` | All categories from [Chicago's crime portal](https://data.cityofchicago.org/d/ijzp-q8t2), filtered to Year = 2025. |
+| `chicago_boundary.geojson` | The [City of Chicago boundary](https://data.cityofchicago.org/d/qqq8-j68g), exported as GeoJSON. |
 
-The first download needs internet access. Please download the data before starting the lab.
+Keep the same files for the whole exercise and note their download date in your
+notebook. DuckDB reads both website headers such as `Primary Type` and headers
+such as `primary_type`. You do not need to edit the CSV by hand.
+
+Work in this order:
+
+1. Audit the full-year file, then explore **January–November** records.
+2. Select 2025 burglaries in SQL and prepare spatial points, accounting for exclusions.
+3. Build H3 and DBSCAN hotspot maps using January–November points only.
+4. Keep those maps and settings fixed, then evaluate against **December** records.
+5. Compare captured incidents, covered area, and PAI. Explain a map alongside its limitations.
+
+The split is at **1 December 2025**. That date belongs to the test period.
+`source_audit` checks the annual file; `category_audit` describes training-period
+records. Task 1 is checked against the annual burglary count, not the training
+count. Counts depend on your saved snapshot because the portal revises records.
+
+Each coding task states its input and output, followed by a cell labelled
+`Check ... Task ...`. A PASS checks those expectations. You still need to inspect
+the outputs and complete the nearby map, audit, or reflection workspace.
+The [Part B notes](notes.md#b1) explain the concepts behind these steps.
 
 > [!IMPORTANT]
 > These are approximate locations of police-recorded reports. They do not measure
@@ -72,8 +86,7 @@ The first download needs internet access. Please download the data before starti
 
 ## Download from the website
 
-You can download the crime CSV yourself instead of using the notebook's automatic
-crime download:
+If both files are already in `lab_02/data/`, start Part B. Otherwise:
 
 1. Open [Crimes: 2001 to Present](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-Present/ijzp-q8t2)
    and choose **Actions → Query data**.
@@ -83,11 +96,14 @@ crime download:
    original columns; you will select BURGLARY in Task 1.
 4. Choose **Export → Download file**, select **CSV**, then **Download**. The dialog
    should say that it exports the data returned by your current query.
-5. Create `lab_02/data/` if needed. Save the original download there as
-   **`chicago_2025_export.csv`**.
-6. Run the data-loading cell in B0. It keeps your export and creates
-   `chicago_2025.csv` with consistent column names and dates, plus source notes.
-   The city boundary still downloads automatically if it is missing.
+5. Create `lab_02/data/` if needed. Save the CSV there as **`chicago_2025.csv`**.
+6. Open [Boundaries: City](https://data.cityofchicago.org/d/qqq8-j68g).
+   Use its export/download menu to select **GeoJSON**, then save it as
+   **`chicago_boundary.geojson`** in the same folder.
+
+Keep the original columns and values. Part B's first cells check the saved files
+and their date coverage. See the [CLI tutorial](../tutorials/03_cli.md#relative-paths-in-a-notebook)
+if a relative path does not point to the file you expect.
 
 ## Windows known issue: package repair
 
